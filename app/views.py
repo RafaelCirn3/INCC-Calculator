@@ -1,16 +1,60 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import ParcelaForm
+from .forms import ParcelaForm, INCCIndexForm
+from django.urls import reverse_lazy
 from django.http import HttpResponse
 import openpyxl
-
-from .models import Parcela
+from django.contrib import messages
+from .models import Parcela, INCCIndex
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
-def parcela_list(request):
-    parcelas = Parcela.objects.all().order_by('-id')  # Ordena do mais recente pro mais antigo
-    return render(request, 'parcela/list.html', {'parcelas': parcelas})
 
+def incc_index_form(request):
+    if request.method == 'POST':
+        form = INCCIndexForm(request.POST)
+        if form.is_valid():
+            try:
+                # Tenta salvar o índice no banco de dados
+                form.save()
+                return redirect('incc_create')
+            except ValueError as e:
+                # Caso a exceção seja gerada (índice já existe), exibe a mensagem de erro
+                messages.error(request, str(e))
+    else:
+        form = INCCIndexForm()
+
+    incc_indices = INCCIndex.objects.all().order_by('-mes_ano')
+    return render(request, 'incc/incc_index_form.html', {'form': form, 'incc_indices': incc_indices})
+
+def parcela_list(request):
+    parcelas = Parcela.objects.all()
+    incc_indices = INCCIndex.objects.all().order_by('-mes_ano')
+    form = INCCIndexForm()
+    return render(request, 'parcela/list.html', {
+        'parcelas': parcelas,
+        'incc_indices': incc_indices,
+        'incc_form': form,
+    })
+
+
+def calcular_incc_acumulado(data_inicio, data_fim):
+    """ Retorna o percentual acumulado do INCC entre dois meses """
+    if data_fim < data_inicio:
+        return Decimal('0')
+
+    acumulado = Decimal('0.00')
+    atual = data_inicio.replace(day=1)
+
+    while atual <= data_fim:
+        try:
+            indice = INCCIndex.objects.get(mes_ano=atual)
+            acumulado += indice.percentual
+        except INCCIndex.DoesNotExist:
+            pass
+
+        atual += relativedelta(months=1)
+
+    return acumulado
 def calcular_parcela(request):
     if request.method == 'POST':
         form = ParcelaForm(request.POST)
@@ -33,7 +77,7 @@ def calcular_parcela(request):
                 juros = parcela.valor_original * Decimal('0.01') * Decimal(dias_atraso) / Decimal('30')
 
                 # Correção pelo INCC informado diretamente pelo usuário (percentual_incc)
-                percentual_incc = Decimal(parcela.percentual_incc) / Decimal('100')  # converter para fator
+                percentual_incc = calcular_incc_acumulado(venc, pagto) / Decimal('100')
                 correcao_incc = parcela.valor_original * percentual_incc
 
                 # Taxa fixa do boleto

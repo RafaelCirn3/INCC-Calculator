@@ -46,8 +46,6 @@ INSTALLED_APPS = [
     # Manipulação de formulários no frontend
     'widget_tweaks',  # Para facilitar a customização de widgets no frontend
     
-    # Outras dependências úteis
-    'django.contrib.sites',  # Necessário para autenticação com e-mails em alguns casos
 ]
 
 
@@ -66,13 +64,14 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'app.utils.context_processors.verificar_indices_incc',
             ],
         },
     },

@@ -1,3 +1,4 @@
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -6,12 +7,69 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
-<body class="hold-transition sidebar-mini" style="background-color: #333333;
-<div class="wrapper">
-        <section class="content">
-            {% block content %}{% endblock %}
-        </section>
+<body class="hold-transition sidebar-mini" style="background-color: #333333;">
 
+<div class="wrapper">
+    <!-- Alerta se não houver índices INCC -->
+
+
+    <section class="content">
+        {% block content %}{% endblock %}
+    </section>
+</div>
+
+<!-- Modal de Cadastro e Listagem de INCC -->
+<div class="modal fade" id="inccModal" tabindex="-1" role="dialog" aria-labelledby="inccModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form method="post" action="{% url 'incc_create' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="inccModalLabel">Cadastro de Índice INCC</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <!-- Formulário de cadastro -->
+            {{ incc_form.non_field_errors }}
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                  <label for="id_mes_ano">Mês/Ano (formato: AAAA-MM-01)</label>
+                  {{ incc_form.mes_ano|add_class:"form-control" }}
+              </div>
+              <div class="form-group col-md-4">
+                  <label for="id_percentual">Percentual do Mês</label>
+                  {{ incc_form.percentual|add_class:"form-control" }}
+              </div>
+              <div class="form-group col-md-4">
+                  <label for="id_percentual_acumulado">Percentual Acumulado</label>
+                  {{ incc_form.percentual_acumulado|add_class:"form-control" }}
+              </div>
+          </div>
+
+            <!-- Listagem de índices cadastrados -->
+            <hr>
+            <h6>Índices cadastrados</h6>
+            <ul class="list-group">
+                {% for indice in incc_indices %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  {{ indice.mes_ano|date:"m/Y" }} — 
+                  <span>Mensal: {{ indice.percentual }}%</span> | 
+                  <span>Acumulado: {{ indice.percentual_acumulado }}%</span>
+              </li>
+                {% empty %}
+                    <li class="list-group-item">Nenhum índice cadastrado.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>

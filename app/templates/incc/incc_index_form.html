@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Cadastrar e Listar Índices INCC{% endblock %}
+
+{% block content %}
+<div class="container mt-4 position-relative">
+    <h2 class="text-white">Cadastrar Índice INCC</h2>
+
+    {% if messages %}
+        <div class="alert alert-danger">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="id_mes_ano" class="text-white">Mês/Ano</label>
+                {{ form.mes_ano|add_class:"form-control" }}
+            </div>
+            <div class="form-group col-md-4">
+                <label for="id_percentual" class="text-white">Percentual do Mês</label>
+                {{ form.percentual|add_class:"form-control" }}
+            </div>
+            <div class="form-group col-md-4">
+                <label for="id_percentual_acumulado" class="text-white">Percentual Acumulado</label>
+                {{ form.percentual_acumulado|add_class:"form-control" }}
+            </div>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+            <a href="{% url 'parcela_list' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </form>
+
+    <hr>
+
+    <h6 class="text-white">Índices INCC Cadastrados</h6>
+    <ul class="list-group">
+        {% for indice in incc_indices %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ indice.mes_ano|date:"m/Y" }} —
+                {{ indice.percentual }}% (Acumulado: {{ indice.percentual_acumulado }}%)
+            </li>
+        {% empty %}
+            <li class="list-group-item">Nenhum índice cadastrado.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

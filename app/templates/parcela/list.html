@@ -1,15 +1,26 @@
 {% extends 'base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}Parcelas Calculadas{% endblock %}
 
 {% block content %}
 <div class="container mt-4 position-relative">
-    <!-- Botão fixo no topo -->
-    <div class="d-flex justify-content-end mb-3">
+    <!-- Alinhando os botões no header -->
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'incc_create' %}" class="btn btn-warning">Cadastrar Índices INCC</a>
         <a href="{% url 'calcular_parcela' %}" class="btn btn-success">
             + Nova Parcela
         </a>
     </div>
+
+    <!-- Verifica se não há índices INCC cadastrados -->
+    {% if not incc_indices %}
+        <div class="alert alert-danger m-3">
+            Nenhum índice INCC cadastrado. O sistema depende desses valores para os cálculos.
+            <button class="btn btn-sm btn-light ml-2" data-toggle="modal" data-target="#inccModal">Cadastrar agora</button>
+            <!-- Atalho para página de cadastro de índices -->
+        </div>
+    {% endif %}
 
     <h2 class="text-white">Parcelas Calculadas</h2>
     <table class="table table-bordered table-dark mt-3">
