@@ -3,77 +3,87 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Sistema de Parcelas{% endblock %}</title>
+    <title>{% block title %}INX - INCC Indexer{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
-<body class="hold-transition sidebar-mini" style="background-color: #333333;">
+<body class="hold-transition sidebar-mini layout-fixed" style="background-color: #333333;">
 
 <div class="wrapper">
-    <!-- Alerta se não houver índices INCC -->
 
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-dark bg-dark">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <span class="nav-link">Bem-vindo ao INX, <strong>Usuário!</strong></span>
+            </li>
+        </ul>
+    </nav>
 
-    <section class="content">
-        {% block content %}{% endblock %}
-    </section>
-</div>
-
-<!-- Modal de Cadastro e Listagem de INCC -->
-<div class="modal fade" id="inccModal" tabindex="-1" role="dialog" aria-labelledby="inccModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <form method="post" action="{% url 'incc_create' %}">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title" id="inccModalLabel">Cadastro de Índice INCC</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-            <span aria-hidden="true">&times;</span>
-          </button>
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="{% url 'home' %}" class="brand-link text-center">
+            <span class="brand-text font-weight-light">Menu</span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+                    <li class="nav-item">
+                        <a href="{% url 'home' %}" class="nav-link">
+                            <i class="nav-icon fas fa-home"></i>
+                            <p>Início</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'parcela_list' %}" class="nav-link">
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                            <p>Parcelas</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'incc_index' %}" class="nav-link">
+                            <i class="nav-icon fas fa-percentage"></i>
+                            <p>INCC</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
-        <div class="modal-body">
-            <!-- Formulário de cadastro -->
-            {{ incc_form.non_field_errors }}
-            <div class="form-row">
-              <div class="form-group col-md-4">
-                  <label for="id_mes_ano">Mês/Ano (formato: AAAA-MM-01)</label>
-                  {{ incc_form.mes_ano|add_class:"form-control" }}
-              </div>
-              <div class="form-group col-md-4">
-                  <label for="id_percentual">Percentual do Mês</label>
-                  {{ incc_form.percentual|add_class:"form-control" }}
-              </div>
-              <div class="form-group col-md-4">
-                  <label for="id_percentual_acumulado">Percentual Acumulado</label>
-                  {{ incc_form.percentual_acumulado|add_class:"form-control" }}
-              </div>
-          </div>
+    </aside>
 
-            <!-- Listagem de índices cadastrados -->
-            <hr>
-            <h6>Índices cadastrados</h6>
-            <ul class="list-group">
-                {% for indice in incc_indices %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  {{ indice.mes_ano|date:"m/Y" }} — 
-                  <span>Mensal: {{ indice.percentual }}%</span> | 
-                  <span>Acumulado: {{ indice.percentual_acumulado }}%</span>
-              </li>
-                {% empty %}
-                    <li class="list-group-item">Nenhum índice cadastrado.</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Salvar</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-        </div>
-      </form>
+    <!-- Content Wrapper -->
+    <div class="content-wrapper" style="background-color:rgb(41, 41, 41);">
+        <section class="content p-4">
+            {% block content %}
+            <div class="container text-white">
+                <h2 class="mb-4">Bem-vindo ao <strong>INX - INCC Indexer</strong></h2>
+                <p>O INX foi desenvolvido para facilitar o cálculo e controle de parcelas com correção monetária baseada no INCC (Índice Nacional da Construção Civil).</p>
+
+                <h5>Funcionalidades:</h5>
+                <ul>
+                    <li>Cadastro de parcelas com valores e datas definidas</li>
+                    <li>Correção automática de parcelas com base no índice INCC</li>
+                    <li>Exportação de relatórios em Excel com valores atualizados</li>
+                    <li>Gestão mensal dos índices INCC e valores acumulados</li>
+                </ul>
+
+                <h5>Importante saber:</h5>
+                <ul>
+                    <li>O campo <strong>"Mês/Ano"</strong> deve ser preenchido no formato <strong>AAAA-MM-01</strong></li>
+                    <li><strong>O sistema ignora o dia</strong> informado no campo de data – apenas mês e ano são utilizados</li>
+                    <li><strong>Use ponto (.) e não vírgula (,)</strong> ao inserir valores percentuais. Exemplo: <code>0.75</code> para representar 0,75%</li>
+                    <li>Mantenha os índices mensais sempre atualizados para garantir cálculos precisos</li>
+                </ul>
+
+                <p>Utilize o menu lateral para acessar os módulos disponíveis. Para dúvidas ou suporte, entre em contato com a equipe responsável.</p>
+            </div>
+            {% endblock %}
+        </section>
     </div>
-  </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 </html>

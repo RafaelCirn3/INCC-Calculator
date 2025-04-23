@@ -1,54 +1,63 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
 
-{% block title %}Cadastrar e Listar Índices INCC{% endblock %}
+{% block title %}Gerenciar INCC{% endblock %}
 
 {% block content %}
-<div class="container mt-4 position-relative">
-    <h2 class="text-white">Cadastrar Índice INCC</h2>
+<div class="container mt-4">
+    <h2 class="text-white mb-4">Gerenciar Índices INCC</h2>
 
     {% if messages %}
-        <div class="alert alert-danger">
+        <div class="alert alert-info">
             {% for message in messages %}
                 <p>{{ message }}</p>
             {% endfor %}
         </div>
     {% endif %}
 
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-row">
-            <div class="form-group col-md-4">
-                <label for="id_mes_ano" class="text-white">Mês/Ano</label>
-                {{ form.mes_ano|add_class:"form-control" }}
-            </div>
-            <div class="form-group col-md-4">
-                <label for="id_percentual" class="text-white">Percentual do Mês</label>
-                {{ form.percentual|add_class:"form-control" }}
-            </div>
-            <div class="form-group col-md-4">
-                <label for="id_percentual_acumulado" class="text-white">Percentual Acumulado</label>
-                {{ form.percentual_acumulado|add_class:"form-control" }}
-            </div>
+    <!-- Formulário de Cadastro -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            Cadastrar Novo Índice
         </div>
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Cadastrar</button>
-            <a href="{% url 'parcela_list' %}" class="btn btn-secondary">Voltar</a>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="id_mes_ano">Mês/Ano</label>
+                        {{ form.mes_ano|add_class:"form-control" }}
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="id_percentual">Percentual do Mês</label>
+                        {{ form.percentual|add_class:"form-control" }}
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="id_percentual_acumulado">Percentual Acumulado</label>
+                        {{ form.percentual_acumulado|add_class:"form-control" }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+                <a href="{% url 'parcela_list' %}" class="btn btn-secondary ml-2">Voltar</a>
+            </form>
         </div>
-    </form>
+    </div>
 
-    <hr>
-
-    <h6 class="text-white">Índices INCC Cadastrados</h6>
-    <ul class="list-group">
-        {% for indice in incc_indices %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ indice.mes_ano|date:"m/Y" }} —
-                {{ indice.percentual }}% (Acumulado: {{ indice.percentual_acumulado }}%)
-            </li>
-        {% empty %}
-            <li class="list-group-item">Nenhum índice cadastrado.</li>
-        {% endfor %}
-    </ul>
+    <!-- Lista de Índices Cadastrados -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            Índices INCC Cadastrados
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for indice in incc_indices %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ indice.mes_ano|date:"m/Y" }}</span>
+                    <span>Mensal: {{ indice.percentual }}% | Acumulado: {{ indice.percentual_acumulado }}%</span>
+                </li>
+            {% empty %}
+                <li class="list-group-item">Nenhum índice cadastrado ainda.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endblock %}

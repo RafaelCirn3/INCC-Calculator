@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',  # Sessões de usuários
     'django.contrib.messages',  # Mensagens para feedback do usuário
     'django.contrib.staticfiles',  # Arquivos estáticos (CSS, JS, imagens)
+    'rest_framework',
     
     # Adicione o seu app de cálculo
     'app',  # Seu app que contém os modelos de Parcela e INCCIndex
