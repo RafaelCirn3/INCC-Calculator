@@ -1,24 +1,24 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import ParcelaForm, INCCIndexForm
-from django.urls import reverse_lazy
 from django.http import HttpResponse
-import openpyxl
 from django.contrib import messages
-from .models import Parcela, INCCIndex
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+from .models import Parcela, INCCIndex
+from .forms import ParcelaForm, INCCIndexForm
+import openpyxl
 
+
+def base(request):
+    return render(request, 'base.html')
 
 def incc_index_form(request):
     if request.method == 'POST':
         form = INCCIndexForm(request.POST)
         if form.is_valid():
             try:
-                # Tenta salvar o índice no banco de dados
                 form.save()
                 return redirect('incc_create')
             except ValueError as e:
-                # Caso a exceção seja gerada (índice já existe), exibe a mensagem de erro
                 messages.error(request, str(e))
     else:
         form = INCCIndexForm()
@@ -27,6 +27,7 @@ def incc_index_form(request):
     return render(request, 'incc/incc_index_form.html', {'form': form, 'incc_indices': incc_indices})
 
 
+# Função para calcular o percentual acumulado do INCC entre duas datas
 def calcular_incc_acumulado(data_inicio, data_fim):
     """ Retorna o percentual acumulado do INCC entre dois meses """
     if data_fim < data_inicio:
@@ -45,6 +46,8 @@ def calcular_incc_acumulado(data_inicio, data_fim):
         atual += relativedelta(months=1)
 
     return acumulado
+
+# Função para calcular a parcela
 def calcular_parcela(request):
     if request.method == 'POST':
         form = ParcelaForm(request.POST)
@@ -52,14 +55,10 @@ def calcular_parcela(request):
             parcela = form.save(commit=False)
             venc = parcela.data_vencimento
             pagto = parcela.data_pagamento
-
-            # se a data de pagamento for anterior ao vencimento, exibe erro
             if venc and pagto:
                 if venc > pagto:
                     form.add_error('data_pagamento', 'Data de pagamento não pode ser anterior ao vencimento.')
                     return render(request, 'parcela/form.html', {'form': form})
-
-            #se data de pagamento for definida em um mês que não existe indice de incc, exibe erro
             if pagto:
                 try:
                     incc = INCCIndex.objects.get(mes_ano=pagto.replace(day=1))
@@ -67,7 +66,6 @@ def calcular_parcela(request):
                     form.add_error('data_pagamento', 'Não existe índice de INCC para o mês de pagamento informado.')
                     return render(request, 'parcela/form.html', {'form': form})
                 dias_atraso = (pagto - venc).days
-
                 # Multa de 2% sobre o valor original
                 multa = parcela.valor_original * Decimal('0.02')
 
@@ -121,8 +119,6 @@ def parcela_delete(request, parcela_id):
         return redirect('parcela_list')
     return render(request, 'parcela/list.html', {'parcela': parcela})
 
-def base(request):
-    return render(request, 'base.html')
 
 def gerar_excel(request):
     # Cria uma planilha Excel

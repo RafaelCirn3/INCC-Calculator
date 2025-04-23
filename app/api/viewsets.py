@@ -1,7 +1,6 @@
 # app/views.py
 
 from rest_framework import viewsets
-from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from ..models import INCCIndex
 from .serializers import INCCIndexSerializer

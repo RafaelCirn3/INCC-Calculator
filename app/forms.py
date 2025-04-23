@@ -1,6 +1,5 @@
 from django import forms
 from .models import Parcela
-from decimal import Decimal
 from .models import INCCIndex
 
 class INCCIndexForm(forms.ModelForm):
@@ -12,6 +11,8 @@ class INCCIndexForm(forms.ModelForm):
             'percentual': forms.NumberInput(attrs={'class': 'form-control'}),
             
         }
+
+
 class ParcelaForm(forms.ModelForm):
     class Meta:
         model = Parcela
