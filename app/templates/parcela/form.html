@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Parcela{% endblock %}
+
+{% block content %}
+<section class="content mt-4" style="width: 100%; height: 100%;">
+    <div class="container-fluid">
+        <!-- Botão flutuante para ver parcelas -->
+        <div class="d-flex justify-content-end mb-2">
+            <a href="{% url 'parcela_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-list"></i> Ver Parcelas
+            </a>
+        </div>
+
+        <!-- Card ocupando largura total com tema escuro -->
+        <div class="card card-success bg-dark text-white">
+            <div class="card-header bg-secondary">
+                <h3 class="card-title">Calcular Nova Parcela</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        {% for field in form %}
+                            <div class="form-group col-md-4">
+                                <label class="text-white">{{ field.label_tag }}</label>
+                                <div class="input-group">
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">{{ field.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-success">Calcular</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

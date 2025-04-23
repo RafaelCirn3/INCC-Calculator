@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes da Parcela{% endblock %}
+
+{% block content %}
+<div class="container mt-4 position-relative">
+    <h2 class="text-white">Detalhes da Parcela</h2>
+
+    <table class="table table-bordered table-dark mt-3">
+        <tr>
+            <th>Valor Original</th>
+            <td>R$ {{ parcela.valor_original }}</td>
+        </tr>
+        <tr>
+            <th>Data de Vencimento</th>
+            <td>{{ parcela.data_vencimento }}</td>
+        </tr>
+        <tr>
+            <th>Data de Pagamento</th>
+            <td>{{ parcela.data_pagamento }}</td>
+        </tr>
+        <tr>
+            <th>Dias de Atraso</th>
+            <td>{{ parcela.dias_atraso }}</td>
+        </tr>
+        <tr>
+            <th>Multa</th>
+            <td>R$ {{ parcela.multa }}</td>
+        </tr>
+        <tr>
+            <th>Juros</th>
+            <td>R$ {{ parcela.juros_mora }}</td>
+        </tr>
+        <tr>
+            <th>Correção INCC</th>
+            <td>R$ {{ parcela.correcao_incc }}</td>
+        </tr>
+        <tr>
+            <th>Taxa de Boleto</th>
+            <td>R$ {{ parcela.taxa_boleto }}</td>
+        </tr>
+        <tr class="card-success bg-gray text-white">
+            <th><strong>Total a Receber</strong></th>
+            <td><strong>R$ {{ parcela.valor_total }}</strong></td>
+        </tr>
+    </table>
+
+    <a href="{% url 'calcular_parcela' %}" class="btn btn-success">Nova Simulação</a>
+</div>
+{% endblock %}

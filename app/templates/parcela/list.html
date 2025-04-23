@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Parcelas Calculadas{% endblock %}
+
+{% block content %}
+<div class="container mt-4 position-relative">
+    <!-- Botão fixo no topo -->
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'calcular_parcela' %}" class="btn btn-success">
+            + Nova Parcela
+        </a>
+    </div>
+
+    <h2 class="text-white">Parcelas Calculadas</h2>
+    <table class="table table-bordered table-dark mt-3">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Valor Original</th>
+                <th>Vencimento</th>
+                <th>Pagamento</th>
+                <th>Total Atualizado</th>
+                <th>Detalhes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for parcela in parcelas %}
+                <tr>
+                    <td>{{ parcela.id }}</td>
+                    <td>{{ parcela.nome }}</td>
+                    <td>R$ {{ parcela.valor_original }}</td>
+                    <td>{{ parcela.data_vencimento }}</td>
+                    <td>{{ parcela.data_pagamento }}</td>
+                    <td>R$ {{ parcela.valor_total }}</td>
+                    <td><a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-sm btn-info">Ver</a></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">Nenhuma parcela encontrada.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Botão para gerar Excel -->
+    <form method="get" action="{% url 'gerar_excel' %}">
+        <button type="submit" class="btn btn-primary">Gerar Excel</button>
+    </form>
+</div>
+
+<!-- Botão flutuante -->
+<a href="{% url 'calcular_parcela' %}" class="btn btn-success position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">
+    + Nova Parcela
+</a>
+{% endblock %}
