@@ -32,7 +32,7 @@
                 <th>Vencimento</th>
                 <th>Pagamento</th>
                 <th>Total Atualizado</th>
-                <th>Detalhes</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -44,7 +44,12 @@
                     <td>{{ parcela.data_vencimento }}</td>
                     <td>{{ parcela.data_pagamento }}</td>
                     <td>R$ {{ parcela.valor_total }}</td>
-                    <td><a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-sm btn-info">Ver</a></td>
+                    <td><a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-sm btn-info">Ver</a>
+                        <form action="{% url 'parcela_delete' parcela.id %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta parcela?')">Excluir</button>
+                        </form></td>
+                    
                 </tr>
             {% empty %}
                 <tr>

@@ -26,16 +26,6 @@ def incc_index_form(request):
     incc_indices = INCCIndex.objects.all().order_by('-mes_ano')
     return render(request, 'incc/incc_index_form.html', {'form': form, 'incc_indices': incc_indices})
 
-def parcela_list(request):
-    parcelas = Parcela.objects.all()
-    incc_indices = INCCIndex.objects.all().order_by('-mes_ano')
-    form = INCCIndexForm()
-    return render(request, 'parcela/list.html', {
-        'parcelas': parcelas,
-        'incc_indices': incc_indices,
-        'incc_form': form,
-    })
-
 
 def calcular_incc_acumulado(data_inicio, data_fim):
     """ Retorna o percentual acumulado do INCC entre dois meses """
@@ -63,11 +53,19 @@ def calcular_parcela(request):
             venc = parcela.data_vencimento
             pagto = parcela.data_pagamento
 
+            # se a data de pagamento for anterior ao vencimento, exibe erro
             if venc and pagto:
                 if venc > pagto:
                     form.add_error('data_pagamento', 'Data de pagamento não pode ser anterior ao vencimento.')
                     return render(request, 'parcela/form.html', {'form': form})
 
+            #se data de pagamento for definida em um mês que não existe indice de incc, exibe erro
+            if pagto:
+                try:
+                    incc = INCCIndex.objects.get(mes_ano=pagto.replace(day=1))
+                except INCCIndex.DoesNotExist:
+                    form.add_error('data_pagamento', 'Não existe índice de INCC para o mês de pagamento informado.')
+                    return render(request, 'parcela/form.html', {'form': form})
                 dias_atraso = (pagto - venc).days
 
                 # Multa de 2% sobre o valor original
@@ -106,6 +104,22 @@ def parcela_detalhe(request, parcela_id):
     parcela = get_object_or_404(Parcela, id=parcela_id)
     return render(request, 'parcela/detail.html', {'parcela': parcela})
 
+def parcela_list(request):
+    parcelas = Parcela.objects.all()
+    incc_indices = INCCIndex.objects.all().order_by('-mes_ano')
+    form = INCCIndexForm()
+    return render(request, 'parcela/list.html', {
+        'parcelas': parcelas,
+        'incc_indices': incc_indices,
+        'incc_form': form,
+    })
+
+def parcela_delete(request, parcela_id):
+    parcela = get_object_or_404(Parcela, id=parcela_id)
+    if request.method == 'POST':
+        parcela.delete()
+        return redirect('parcela_list')
+    return render(request, 'parcela/list.html', {'parcela': parcela})
 
 def base(request):
     return render(request, 'base.html')
