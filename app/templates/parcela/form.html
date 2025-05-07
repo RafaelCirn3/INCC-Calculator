@@ -22,6 +22,14 @@
                     {% csrf_token %}
                     <div class="row">
                         {% for field in form %}
+                        {% if field.name == 'aplicar_incc' %}
+                            <div class="form-group col-md-12">
+                                <div class="form-check mt-4">
+                                    {{ field }}
+                                    <label class="form-check-label text-white" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                </div>
+                            </div>
+                        {% else %}
                             <div class="form-group col-md-4">
                                 <label class="text-white">{{ field.label_tag }}</label>
                                 <div class="input-group">
@@ -31,7 +39,8 @@
                                     {% endif %}
                                 </div>
                             </div>
-                        {% endfor %}
+                        {% endif %}
+                    {% endfor %}
                     </div>
                     <button type="submit" class="btn btn-success">Calcular</button>
                 </form>

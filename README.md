@@ -1,3 +1,51 @@
+
+## ▶️ Como Executar
+
+Siga os passos abaixo para rodar o projeto localmente:
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/RafaelCirn3/INCC-Calculator
+cd INCC-Calculator
+```
+
+### 2. Crie e ative o ambiente virtual
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate   # Windows
+```
+
+### 3. Instale as dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Execute as migrações do banco de dados
+
+```bash
+python manage.py migrate
+```
+
+### 5. Popule o banco com os índices INCC
+
+```bash
+python manage.py carregar_incc
+```
+
+### 6. Inicie o servidor de desenvolvimento
+
+```bash
+python manage.py runserver
+```
+
+Acesse a aplicação em `http://127.0.0.1:8000`
+
+
+---
 # 🧮 Sistema de Cálculo de Parcelas com INCC, Juros e Multa
 
 Esta aplicação em **Django** tem como objetivo calcular o valor atualizado de parcelas em atraso, considerando:
@@ -47,7 +95,9 @@ multa = valor_original × 0.02
 juros_mora = valor_original × (0.01 × (dias_atraso / 30))
 ```
 
-### 🗂️ Exemplo de Entrada
+---
+
+## 🗂️ Exemplo de Entrada
 
 Valor Parcela |	Vencimento	| Pagamento 
 
@@ -58,21 +108,14 @@ R$ 654,05 |	01/04/2024| 05/04/2025
 ## 🧾 Exemplo de Saída
 - A aplicação gera uma planilha .xlsx com as colunas:
 
-###  Valor Original
-
+- Valor Original
 - Vencimento
-
 - Data de Pagamento
-
 - Dias de Atraso
-
 - Multa (R$)
-
 - Juros de Mora (R$)
-
 - Correção INCC (R$)
-
 - Taxa Boleto (R$)
-
 - Total a Receber (R$)
 
+---

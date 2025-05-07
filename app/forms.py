@@ -16,18 +16,20 @@ class INCCIndexForm(forms.ModelForm):
 class ParcelaForm(forms.ModelForm):
     class Meta:
         model = Parcela
-        fields = ['nome', 'valor_original', 'data_vencimento', 'data_pagamento']
+        fields = ['nome', 'valor_original', 'data_vencimento', 'data_pagamento', 'aplicar_incc']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome do Cliente'}),
             'valor_original': forms.NumberInput(attrs={'class': 'form-control'}),
             'data_vencimento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'data_pagamento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'aplicar_incc': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'nome': 'Nome do Cliente',
             'valor_original': 'Valor Original',
             'data_vencimento': 'Data de Vencimento',
             'data_pagamento': 'Data de Pagamento',
+            'aplicar_incc': 'Aplicar correção pelo INCC',
         }
         help_texts = {
             'nome': 'Informe o nome do cliente (opcional).',

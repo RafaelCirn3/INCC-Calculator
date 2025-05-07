@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from dateutil.relativedelta import relativedelta
+from django.utils.timezone import datetime
 from decimal import Decimal
 from .models import Parcela, INCCIndex
 from .forms import ParcelaForm, INCCIndexForm
@@ -55,34 +56,48 @@ def calcular_parcela(request):
             parcela = form.save(commit=False)
             venc = parcela.data_vencimento
             pagto = parcela.data_pagamento
+
             if venc and pagto:
                 if venc > pagto:
                     form.add_error('data_pagamento', 'Data de pagamento não pode ser anterior ao vencimento.')
                     return render(request, 'parcela/form.html', {'form': form})
+
             if pagto:
+                # Tenta buscar o INCC do mês de pagamento. Se não existir, tenta o do mês anterior.
+                mes_ref = pagto.replace(day=1)
                 try:
-                    incc = INCCIndex.objects.get(mes_ano=pagto.replace(day=1))
+                    incc = INCCIndex.objects.get(mes_ano=mes_ref)
                 except INCCIndex.DoesNotExist:
-                    form.add_error('data_pagamento', 'Não existe índice de INCC para o mês de pagamento informado.')
-                    return render(request, 'parcela/form.html', {'form': form})
+                    mes_ref = mes_ref - relativedelta(months=1)
+                    try:
+                        incc = INCCIndex.objects.get(mes_ano=mes_ref)
+                    except INCCIndex.DoesNotExist:
+                        form.add_error('data_pagamento', 'Não existe índice de INCC para o mês de pagamento ou mês anterior.')
+                        return render(request, 'parcela/form.html', {'form': form})
+
                 dias_atraso = (pagto - venc).days
-                # Multa de 2% sobre o valor original
+                dias_atraso = max(dias_atraso, 0)
+
+                # Multa de 2%
                 multa = parcela.valor_original * Decimal('0.02')
 
-                # Juros de mora de 1% ao mês (proporcional aos dias)
+                # Juros proporcionais (1% ao mês = 0.03333% ao dia, aproximado por 1/30)
                 juros = parcela.valor_original * Decimal('0.01') * Decimal(dias_atraso) / Decimal('30')
 
-                # Correção pelo INCC informado diretamente pelo usuário (percentual_incc)
-                percentual_incc = calcular_incc_acumulado(venc, pagto) / Decimal('100')
-                correcao_incc = parcela.valor_original * percentual_incc
+                # Correção opcional pelo INCC
+                if parcela.aplicar_incc:
+                    percentual_incc = calcular_incc_acumulado(venc, pagto) / Decimal('100')
+                    correcao_incc = parcela.valor_original * percentual_incc
+                else:
+                    correcao_incc = Decimal('0.00')
 
-                # Taxa fixa do boleto
+                # Taxa de boleto fixa
                 taxa_boleto = Decimal('3.00')
 
-                # Valor total com todos os acréscimos
+                # Valor total
                 total = parcela.valor_original + multa + juros + correcao_incc + taxa_boleto
 
-                # Preenchendo os campos calculados
+                # Preenchendo campos
                 parcela.dias_atraso = dias_atraso
                 parcela.multa = multa
                 parcela.juros_mora = juros
@@ -91,7 +106,6 @@ def calcular_parcela(request):
                 parcela.valor_total = total
 
                 parcela.save()
-
                 return redirect('parcela_detalhe', parcela_id=parcela.id)
     else:
         form = ParcelaForm()
