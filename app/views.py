@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from dateutil.relativedelta import relativedelta
-from django.utils.timezone import datetime
+
 from decimal import Decimal
 from .models import Parcela, INCCIndex
 from .forms import ParcelaForm, INCCIndexForm
 import openpyxl
-
+from django.views.decorators.csrf import csrf_exempt
+from .utils.incc_base import carregar_incc_no_banco
 
 def base(request):
     return render(request, 'base.html')
@@ -168,3 +169,15 @@ def gerar_excel(request):
     wb.save(response)
     
     return response
+
+@csrf_exempt  # Ação que pode ser acessada sem CSRF para facilitar no exemplo
+def alimentar_incc(request):
+    if request.method == 'POST':
+        # Carregar os dados do INCC no banco de dados
+        try:
+            carregar_incc_no_banco()  # Chama o código para carregar os dados
+            messages.success(request, "Dados do INCC alimentados com sucesso!")
+        except Exception as e:
+            return HttpResponse(f"Erro ao alimentar os dados INCC: {str(e)}")
+
+    return redirect('incc_index')  # Redireciona de volta para a lista de INCC

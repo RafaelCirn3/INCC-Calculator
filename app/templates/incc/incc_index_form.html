@@ -6,7 +6,14 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="text-white mb-4">Gerenciar Índices INCC</h2>
-
+    <div class="d-flex justify-content-end mb-2">
+        <form method="post" action="{% url 'alimentar_incc' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-sync-alt"></i> Alimentar INCC
+            </button>
+        </form>
+    </div>
     {% if messages %}
         <div class="alert alert-info">
             {% for message in messages %}

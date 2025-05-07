@@ -1,5 +1,5 @@
 
-## ▶️ Como Executar
+# ▶️ Como Executar
 
 Siga os passos abaixo para rodar o projeto localmente:
 
@@ -44,6 +44,17 @@ python manage.py runserver
 
 Acesse a aplicação em `http://127.0.0.1:8000`
 
+
+# Caso utilizer o Dockerfile: 
+###  Executando o Docker
+
+```bash
+docker build -t incc-calculator . 
+```
+
+```bash
+docker run -p 8000:8000 incc-calculator 
+```
 
 ---
 # 🧮 Sistema de Cálculo de Parcelas com INCC, Juros e Multa

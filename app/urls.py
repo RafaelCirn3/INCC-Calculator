@@ -21,6 +21,9 @@ urlpatterns = [
     path('parcela/<int:parcela_id>/', views.parcela_detalhe, name='parcela_detalhe'),
     path('parcela_delete/<int:parcela_id>/', views.parcela_delete, name='parcela_delete'),
 
+
+#rota para alimentar o incc
+    path('alimentar_incc/', views.alimentar_incc, name='alimentar_incc'),
 #rota da api
     path('api/', include('app.api.urls')),
 ]
