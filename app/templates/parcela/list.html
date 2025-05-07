@@ -14,11 +14,10 @@
 
     <!-- Verifica se não há índices INCC cadastrados -->
     {% if not incc_indices %}
-        <div class="alert alert-danger m-3">
-            Nenhum índice INCC cadastrado. O sistema depende desses valores para os cálculos.
-            <button class="btn btn-sm btn-light ml-2" data-toggle="modal" data-target="#inccModal">Cadastrar agora</button>
-            <!-- Atalho para página de cadastro de índices -->
-        </div>
+    <div class="alert alert-danger m-3">
+        Nenhum índice INCC cadastrado. O sistema depende desses valores para os cálculos.
+        <a href="{% url 'incc_index' %}" class="btn btn-sm btn-dark ml-2">Cadastrar agora</a>
+    </div>
     {% endif %}
 
     <h2 class="text-white">Parcelas Calculadas</h2>
