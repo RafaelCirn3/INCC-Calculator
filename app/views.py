@@ -136,6 +136,15 @@ def parcela_delete(request, parcela_id):
         return redirect('parcela_list')
     return render(request, 'parcela/list.html', {'parcela': parcela})
 
+def excluir_varias_parcelas(request):
+    if request.method == 'POST':
+        ids = request.POST.getlist('parcelas_selecionadas')
+        if ids:
+            Parcela.objects.filter(id__in=ids).delete()
+            messages.success(request, f"{len(ids)} parcela(s) excluída(s) com sucesso.")
+        else:
+            messages.warning(request, "Nenhuma parcela foi selecionada.")
+    return redirect('parcela_list')
 
 def gerar_excel(request):
     # Cria uma planilha Excel

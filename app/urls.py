@@ -20,7 +20,7 @@ urlpatterns = [
     path('parcelas/', views.parcela_list, name='parcela_list'), 
     path('parcela/<int:parcela_id>/', views.parcela_detalhe, name='parcela_detalhe'),
     path('parcela_delete/<int:parcela_id>/', views.parcela_delete, name='parcela_delete'),
-
+    path('parcelas/excluir-multiplas/', views.excluir_varias_parcelas, name='parcelas_excluir_multiplas'),
 
 #rota para alimentar o incc
     path('alimentar_incc/', views.alimentar_incc, name='alimentar_incc'),

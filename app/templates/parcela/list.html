@@ -5,14 +5,15 @@
 
 {% block content %}
 <div class="container mt-4 position-relative">
-    <!-- Alinhando os botões no header -->
+
+    <!-- Botões superiores -->
     <div class="d-flex justify-content-between mb-3">
         <a href="{% url 'calcular_parcela' %}" class="btn btn-success">
             + Nova Parcela
         </a>
     </div>
 
-    <!-- Verifica se não há índices INCC cadastrados -->
+    <!-- Alerta se não houver INCC -->
     {% if not incc_indices %}
     <div class="alert alert-danger m-3">
         Nenhum índice INCC cadastrado. O sistema depende desses valores para os cálculos.
@@ -21,42 +22,52 @@
     {% endif %}
 
     <h2 class="text-white">Parcelas Calculadas</h2>
-    <table class="table table-bordered table-dark mt-3">
-        <thead class="thead-dark">
-            <tr>
-                <th>Nome</th>
-                <th>Valor Original</th>
-                <th>Vencimento</th>
-                <th>Pagamento</th>
-                <th>Total Atualizado</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for parcela in parcelas %}
+
+    <!-- Formulário para múltipla exclusão -->
+    <form method="post" action="{% url 'parcelas_excluir_multiplas' %}" onsubmit="return confirm('Deseja excluir as parcelas selecionadas?')">
+        {% csrf_token %}
+        <table class="table table-bordered table-dark mt-3">
+            <thead class="thead-dark">
                 <tr>
-                    <td>{{ parcela.nome }}</td>
-                    <td>R$ {{ parcela.valor_original }}</td>
-                    <td>{{ parcela.data_vencimento }}</td>
-                    <td>{{ parcela.data_pagamento }}</td>
-                    <td>R$ {{ parcela.valor_total }}</td>
-                    <td><a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-sm btn-info">Ver</a>
-                        <form action="{% url 'parcela_delete' parcela.id %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta parcela?')">Excluir</button>
-                        </form></td>
-                    
+                    <th><input type="checkbox" id="check-all"></th>
+                    <th>Nome</th>
+                    <th>Valor Original</th>
+                    <th>Vencimento</th>
+                    <th>Pagamento</th>
+                    <th>Total Atualizado</th>
+                    <th>Ações</th>
                 </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center">Nenhuma parcela encontrada.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for parcela in parcelas %}
+                    <tr>
+                        <td><input type="checkbox" name="parcelas_selecionadas" value="{{ parcela.id }}"></td>
+                        <td>{{ parcela.nome }}</td>
+                        <td>R$ {{ parcela.valor_original }}</td>
+                        <td>{{ parcela.data_vencimento }}</td>
+                        <td>{{ parcela.data_pagamento }}</td>
+                        <td>R$ {{ parcela.valor_total }}</td>
+                        <td>
+                            <a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-sm btn-info">Ver</a>
+                            <form action="{% url 'parcela_delete' parcela.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Deseja excluir esta parcela?')">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">Nenhuma parcela encontrada.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-danger mt-2">Excluir selecionadas</button>
+    </form>
 
     <!-- Botão para gerar Excel -->
-    <form method="get" action="{% url 'gerar_excel' %}">
+    <form method="get" action="{% url 'gerar_excel' %}" class="mt-3">
         <button type="submit" class="btn btn-primary">Gerar Excel</button>
     </form>
 </div>
@@ -65,4 +76,16 @@
 <a href="{% url 'calcular_parcela' %}" class="btn btn-success position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">
     + Nova Parcela
 </a>
+
+<!-- Script para marcar/desmarcar todos os checkboxes -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const checkAll = document.getElementById('check-all');
+        const checkboxes = document.querySelectorAll('input[name="parcelas_selecionadas"]');
+        
+        checkAll.addEventListener('change', function () {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    });
+</script>
 {% endblock %}
