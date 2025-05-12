@@ -83,8 +83,10 @@ def calcular_parcela(request):
                 multa = parcela.valor_original * Decimal('0.02')
 
                 # Juros proporcionais (1% ao mês = 0.03333% ao dia, aproximado por 1/30)
-                juros = parcela.valor_original * Decimal('0.01') * Decimal(dias_atraso) / Decimal('30')
-
+                if parcela.aplicar_juros:
+                    juros = parcela.valor_original * Decimal('0.01') * Decimal(dias_atraso) / Decimal('30')
+                else:
+                    juros = Decimal('0.00')
                 # Correção opcional pelo INCC
                 if parcela.aplicar_incc:
                     percentual_incc = calcular_incc_acumulado(venc, pagto) / Decimal('100')
@@ -141,25 +143,24 @@ def gerar_excel(request):
     ws = wb.active
     ws.title = 'Parcelas'
 
+    #soma os valores totais e colocar no final da planilha
+    total_valor = sum(parcela.valor_total for parcela in Parcela.objects.all())
     # Definir os cabeçalhos da planilha
-    headers = ['ID', 'Data Vencimento', 'Data Pagamento', 'Valor Original', 'Dias de Atraso', 'Multa', 'Juros', 'Correção INCC', 'Taxa Boleto', 'Valor Total']
+    headers = ['Data Vencimento', 'Data Pagamento', 'Valor Original', 'Valor Total']
     ws.append(headers)
 
     # Adicionar dados das parcelas
     parcelas = Parcela.objects.all()
     for parcela in parcelas:
         ws.append([
-            parcela.id,
+
             parcela.data_vencimento.strftime('%d/%m/%Y'),
             parcela.data_pagamento.strftime('%d/%m/%Y'),
             str(parcela.valor_original),
-            parcela.dias_atraso,
-            str(parcela.multa),
-            str(parcela.juros_mora),
-            str(parcela.correcao_incc),
-            str(parcela.taxa_boleto),
             str(parcela.valor_total),
         ])
+    # Adicionar a soma total na última linha
+    ws.append(['', '', 'Total:', str(total_valor)])
 
     # Criar a resposta HTTP com o arquivo Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

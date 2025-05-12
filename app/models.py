@@ -34,6 +34,7 @@ class Parcela(models.Model):
     taxa_boleto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     aplicar_incc = models.BooleanField(default=True)
+    aplicar_juros = models.BooleanField(default=True)
 
 
     def __str__(self):

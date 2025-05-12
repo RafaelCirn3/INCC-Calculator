@@ -24,7 +24,6 @@
     <table class="table table-bordered table-dark mt-3">
         <thead class="thead-dark">
             <tr>
-                <th>ID</th>
                 <th>Nome</th>
                 <th>Valor Original</th>
                 <th>Vencimento</th>
@@ -36,7 +35,6 @@
         <tbody>
             {% for parcela in parcelas %}
                 <tr>
-                    <td>{{ parcela.id }}</td>
                     <td>{{ parcela.nome }}</td>
                     <td>R$ {{ parcela.valor_original }}</td>
                     <td>{{ parcela.data_vencimento }}</td>
