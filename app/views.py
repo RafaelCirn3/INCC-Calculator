@@ -144,7 +144,8 @@ def gerar_excel(request):
     ws.title = 'Parcelas'
 
     #soma os valores totais e colocar no final da planilha
-    total_valor = sum(parcela.valor_total for parcela in Parcela.objects.all())
+    total_valor_atualizado = sum(parcela.valor_total for parcela in Parcela.objects.all())
+    total_valor_original = sum(parcela.valor_original for parcela in Parcela.objects.all())
     # Definir os cabeçalhos da planilha
     headers = ['Data Vencimento', 'Data Pagamento', 'Valor Original', 'Valor Total']
     ws.append(headers)
@@ -160,7 +161,8 @@ def gerar_excel(request):
             str(parcela.valor_total),
         ])
     # Adicionar a soma total na última linha
-    ws.append(['', '', 'Total:', str(total_valor)])
+    ws.append(['', '', 'Valor Original:', str(total_valor_original)])
+    ws.append(['', '', 'Valor Atualizado:', str(total_valor_atualizado)])
 
     # Criar a resposta HTTP com o arquivo Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
