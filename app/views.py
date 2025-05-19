@@ -6,7 +6,10 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from .models import Parcela, INCCIndex
 from .forms import ParcelaForm, INCCIndexForm
+import pandas as pd
 import openpyxl
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.utils import get_column_letter
 from django.views.decorators.csrf import csrf_exempt
 from .utils.incc_base import carregar_incc_no_banco
 
@@ -146,41 +149,76 @@ def excluir_varias_parcelas(request):
         else:
             messages.warning(request, "Nenhuma parcela foi selecionada.")
     return redirect('parcela_list')
-
 def gerar_excel(request):
-    # Cria uma planilha Excel
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = 'Parcelas'
-
-    #soma os valores totais e colocar no final da planilha
-    total_valor_atualizado = sum(parcela.valor_total for parcela in Parcela.objects.all())
-    total_valor_original = sum(parcela.valor_original for parcela in Parcela.objects.all())
-    # Definir os cabeçalhos da planilha
-    headers = ['Data Vencimento', 'Data Pagamento', 'Valor Original', 'Valor Total']
-    ws.append(headers)
-
-    # Adicionar dados das parcelas
+    # Buscar dados das parcelas
     parcelas = Parcela.objects.all()
-    for parcela in parcelas:
-        ws.append([
 
-            parcela.data_vencimento.strftime('%d/%m/%Y'),
-            parcela.data_pagamento.strftime('%d/%m/%Y'),
-            str(parcela.valor_original),
-            str(parcela.valor_total),
-        ])
-    # Adicionar a soma total na última linha
-    ws.append(['', '', 'Valor Original:', str(total_valor_original)])
-    ws.append(['', '', 'Valor Atualizado:', str(total_valor_atualizado)])
+    # Criar DataFrame com os dados
+    data = []
+    for p in parcelas:
+        data.append({
+            'Data Vencimento': p.data_vencimento.strftime('%d/%m/%Y'),
+            'Data Pagamento': p.data_pagamento.strftime('%d/%m/%Y'),
+            'Valor Original': float(p.valor_original),
+            'Valor Total': float(p.valor_total),
+        })
 
-    # Criar a resposta HTTP com o arquivo Excel
+    df = pd.DataFrame(data)
+
+    # Cálculo dos totais
+    total_original = df['Valor Original'].sum()
+    total_total = df['Valor Total'].sum()
+
+    # Adicionar linhas de totais
+    df.loc[len(df.index)] = ['', '', 'Valor Original:', total_original]
+    df.loc[len(df.index)] = ['', '', 'Valor Atualizado:', total_total]
+
+    # Criar um arquivo Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="parcelas.xlsx"'
-    
-    # Salvar o arquivo Excel na resposta
-    wb.save(response)
-    
+
+    # Gravar no arquivo
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Parcelas', index=False)
+
+        # Estilização com openpyxl
+        wb = writer.book
+        ws = writer.sheets['Parcelas']
+
+        # Estilo para cabeçalhos
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill("solid", fgColor="4F81BD")
+        center_align = Alignment(horizontal='center')
+        border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+
+        for col_num, column_title in enumerate(df.columns, 1):
+            cell = ws.cell(row=1, column=col_num)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = center_align
+            cell.border = border
+
+        # Estilo para dados e ajuste de largura
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=ws.max_column):
+            for cell in row:
+                cell.border = border
+                if isinstance(cell.value, float):
+                    cell.number_format = '#,##0.00'
+
+        # Ajustar largura das colunas automaticamente
+        for col in ws.columns:
+            max_length = 0
+            col_letter = get_column_letter(col[0].column)
+            for cell in col:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[col_letter].width = max_length + 2
+
     return response
 
 @csrf_exempt  # Ação que pode ser acessada sem CSRF para facilitar no exemplo
