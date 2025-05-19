@@ -78,10 +78,11 @@ def calcular_parcela(request):
 
                 dias_atraso = (pagto - venc).days
                 dias_atraso = max(dias_atraso, 0)
-
-                # Multa de 2%
-                multa = parcela.valor_original * Decimal('0.02')
-
+                #Multa Opcional
+                multa = Decimal('0.00')  # Valor padrão
+                if parcela.aplicar_multa:
+                    if dias_atraso > 0:
+                        multa = parcela.valor_original * Decimal('0.02')
                 # Juros proporcionais (1% ao mês = 0.03333% ao dia, aproximado por 1/30)
                 if parcela.aplicar_juros:
                     juros = parcela.valor_original * Decimal('0.01') * Decimal(dias_atraso) / Decimal('30')
