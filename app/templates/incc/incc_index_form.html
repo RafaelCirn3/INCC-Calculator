@@ -4,12 +4,15 @@
 {% block title %}Gerenciar INCC{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="text-white mb-4">Gerenciar Índices INCC</h2>
-    <div class="d-flex justify-content-end mb-2">
+<div class="container mt-4 fade-in-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4" style="gap: 10px;">
+        <h2 class="text-white mb-0">Gerenciar Índices INCC</h2>
+        <span class="badge" style="background: rgba(242,184,75,0.2); color: #f8cd78; border: 1px solid rgba(242,184,75,0.4);">Base atualizável</span>
+    </div>
+    <div class="d-flex justify-content-end mb-3">
         <form method="post" action="{% url 'alimentar_incc' %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary px-4" id="btn-alimentar-incc">
                 <i class="fas fa-sync-alt"></i> Alimentar INCC
             </button>
         </form>
@@ -23,41 +26,43 @@
     {% endif %}
 
     <!-- Formulário de Cadastro -->
-    <div class="card mb-4">
-        <div class="card-header bg-dark text-white">
+    <div class="card mb-4 overflow-hidden">
+        <div class="card-header text-white">
             Cadastrar Novo Índice
         </div>
         <div class="card-body">
+            <p style="color: #b7c2d9;">Cadastre índices mensais para manter os cálculos sempre consistentes.</p>
             <form method="post">
                 {% csrf_token %}
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label for="id_mes_ano">Mês/Ano</label>
+                        <label for="id_mes_ano" class="font-weight-bold">Mês/Ano</label>
                         {{ form.mes_ano|add_class:"form-control" }}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="id_percentual">Percentual do Mês</label>
+                        <label for="id_percentual" class="font-weight-bold">Percentual do Mês</label>
                         {{ form.percentual|add_class:"form-control" }}
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="id_percentual_acumulado">Percentual Acumulado</label>
+                        <label for="id_percentual_acumulado" class="font-weight-bold">Percentual Acumulado</label>
                         {{ form.percentual_acumulado|add_class:"form-control" }}
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success">Salvar</button>
-                <a href="{% url 'parcela_list' %}" class="btn btn-secondary ml-2">Voltar</a>
+                <button type="submit" class="btn btn-success px-4">Salvar</button>
+                <a href="{% url 'parcela_list' %}" class="btn btn-secondary ml-2 px-4">Voltar</a>
             </form>
         </div>
     </div>
 
     <!-- Lista de Índices Cadastrados -->
-    <div class="card">
-        <div class="card-header bg-dark text-white">
+    <div class="card overflow-hidden">
+        <div class="card-header text-white d-flex justify-content-between align-items-center">
             Índices INCC Cadastrados
+            <small class="text-muted">Total: {{ incc_indices|length }}</small>
         </div>
         <ul class="list-group list-group-flush">
             {% for indice in incc_indices %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                <li class="list-group-item d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.02); border-color: rgba(183,194,217,0.15); color: #eaf2ff;">
                     <span>{{ indice.mes_ano|date:"m/Y" }}</span>
                     <span>Mensal: {{ indice.percentual }}% | Acumulado: {{ indice.percentual_acumulado }}%</span>
                 </li>
@@ -67,4 +72,18 @@
         </ul>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const button = document.getElementById('btn-alimentar-incc');
+        if (!button) {
+            return;
+        }
+
+        button.closest('form').addEventListener('submit', function () {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Atualizando...';
+        });
+    });
+</script>
 {% endblock %}

@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}INX - INCC Indexer{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,85 +15,230 @@
     <!-- AdminLTE Theme -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     
-    <!-- Custom Dark Theme Enhancements -->
+    <!-- Custom Theme Enhancements -->
     <style>
         :root {
-            --dark-primary: #343a40;
-            --dark-secondary: #454d55;
-            --dark-accent: #007bff;
+            --bg-main: #111723;
+            --bg-panel: #1b2433;
+            --bg-panel-soft: #202b3f;
+            --accent: #1da4a3;
+            --accent-strong: #2dc3a2;
+            --accent-warm: #f2b84b;
+            --text-primary: #ecf2ff;
+            --text-secondary: #b7c2d9;
+            --border: rgba(183, 194, 217, 0.18);
+            --shadow: 0 12px 30px rgba(4, 8, 20, 0.35);
         }
-        
+
+        * {
+            scroll-behavior: smooth;
+        }
+
         body {
-            background-color: var(--dark-primary);
-            color: #e1e1e1;
+            font-family: 'DM Sans', sans-serif;
+            background: radial-gradient(circle at 8% 8%, rgba(45, 195, 162, 0.14), transparent 22%),
+                        radial-gradient(circle at 92% 14%, rgba(242, 184, 75, 0.14), transparent 24%),
+                        linear-gradient(180deg, #0f1522, #141d2c 28%, #121a28 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
         }
-        
+
+        h1, h2, h3, h4, h5, h6, .brand-text {
+            font-family: 'Sora', sans-serif;
+            letter-spacing: 0.3px;
+        }
+
         .content-wrapper {
-            background-color: var(--dark-primary) !important;
+            background: transparent !important;
         }
-        
+
         .card {
-            background-color: var(--dark-secondary);
-            border-color: #495057;
+            background: linear-gradient(180deg, rgba(32, 43, 63, 0.95), rgba(25, 34, 52, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
         }
-        
+
         .card-header {
-            border-bottom-color: #495057;
-            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 15, 26, 0.35);
+            border-radius: 16px 16px 0 0;
         }
-        
+
         .table {
-            color: #e1e1e1;
+            color: var(--text-primary);
         }
-        
+
         .table th, .table td {
-            border-top-color: #495057;
+            border-top-color: var(--border);
+            vertical-align: middle;
         }
-        
+
         .table thead th {
-            border-bottom-color: #495057;
-            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom-color: var(--border);
+            background-color: rgba(10, 15, 26, 0.55);
         }
-        
+
         .table-hover tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(45, 195, 162, 0.08);
         }
-        
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+
+        .btn-primary, .btn-info {
+            background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+            border: none;
+            box-shadow: 0 8px 18px rgba(24, 154, 151, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, #1f8f72, #2ebd95);
+            border: none;
+            box-shadow: 0 8px 18px rgba(31, 143, 114, 0.34);
+        }
+
+        .btn-danger {
+            background: linear-gradient(90deg, #c24848, #d96767);
+            border: none;
+        }
+
+        .btn-outline-light,
+        .btn-outline-primary,
+        .btn-secondary {
+            border-color: var(--border);
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
         .form-control, .custom-select {
-            background-color: #495057;
-            border-color: #6c757d;
-            color: #f8f9fa;
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: 10px;
+            min-height: 44px;
         }
-        
+
         .form-control:focus {
-            background-color: #5a6268;
-            border-color: var(--dark-accent);
-            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 0.2rem rgba(29, 164, 163, 0.2);
+            color: var(--text-primary);
         }
-        
+
+        .main-header,
+        .main-footer,
+        .main-sidebar {
+            backdrop-filter: blur(8px);
+        }
+
+        .main-header {
+            background: rgba(12, 18, 30, 0.85) !important;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .main-sidebar {
+            background: rgba(12, 18, 30, 0.9) !important;
+            border-right: 1px solid var(--border);
+        }
+
+        .nav-sidebar .nav-link {
+            border-radius: 10px;
+            margin: 2px 8px;
+            color: var(--text-secondary);
+        }
+
+        .nav-sidebar .nav-link.active {
+            background: linear-gradient(90deg, rgba(29, 164, 163, 0.24), rgba(45, 195, 162, 0.2));
+            color: var(--text-primary);
+            border: 1px solid rgba(45, 195, 162, 0.28);
+        }
+
         .nav-tabs .nav-link.active {
-            background-color: var(--dark-secondary);
-            border-color: #495057 #495057 var(--dark-secondary);
-            color: #ffffff;
+            background-color: var(--bg-panel-soft);
+            border-color: var(--border) var(--border) var(--bg-panel-soft);
+            color: var(--text-primary);
         }
-        
+
         .nav-tabs .nav-link:hover {
-            border-color: #495057 #495057 #6c757d;
+            border-color: var(--border);
         }
-        
+
         .select2-container--default .select2-selection--single {
-            background-color: #495057;
-            border-color: #6c757d;
+            background-color: rgba(255, 255, 255, 0.04);
+            border-color: var(--border);
         }
-        
+
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #f8f9fa;
+            color: var(--text-primary);
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.55s ease both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ux-toast {
+            background: rgba(26, 35, 52, 0.95);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-left: 4px solid var(--accent-warm);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        #ux-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            z-index: 2000;
+            background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+            transition: width 0.25s ease;
+        }
+
+        @media (max-width: 768px) {
+            .content-header h1 {
+                font-size: 1.25rem;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .card-tools .btn {
+                width: auto;
+                margin-bottom: 0;
+            }
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body class="hold-transition sidebar-mini layout-fixed dark-mode">
+<div id="ux-loader"></div>
 
 <div class="wrapper">
 
@@ -173,9 +321,19 @@
         <!-- Main content -->
         <section class="content">
             <div class="container-fluid">
+                {% if messages %}
+                <div id="ux-messages" class="fade-in-up" style="position: sticky; top: 10px; z-index: 1050;">
+                    {% for message in messages %}
+                    <div class="ux-toast" data-toast>
+                        <strong class="mr-2"><i class="fas fa-info-circle"></i></strong>{{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 {% block content %}
                 <div class="row">
-                    <div class="col-lg-8 mx-auto">
+                    <div class="col-lg-8 mx-auto fade-in-up">
                         <div class="card bg-gray-dark">
                             <div class="card-header">
                                 <h3 class="card-title">Bem-vindo ao <strong>INX - INCC Indexer</strong></h3>
@@ -185,7 +343,7 @@
                                 
                                 <div class="row mt-4">
                                     <div class="col-md-6">
-                                        <div class="info-box bg-gradient-dark">
+                                        <div class="info-box" style="background: linear-gradient(120deg, rgba(29,164,163,0.28), rgba(45,195,162,0.2)); border-radius: 14px; border: 1px solid var(--border);">
                                             <span class="info-box-icon"><i class="fas fa-file-invoice-dollar"></i></span>
                                             <div class="info-box-content">
                                                 <span class="info-box-text">Parcelas</span>
@@ -197,7 +355,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="info-box bg-gradient-dark">
+                                        <div class="info-box" style="background: linear-gradient(120deg, rgba(242,184,75,0.26), rgba(242,184,75,0.12)); border-radius: 14px; border: 1px solid var(--border);">
                                             <span class="info-box-icon"><i class="fas fa-percentage"></i></span>
                                             <div class="info-box-content">
                                                 <span class="info-box-text">Índices INCC</span>
@@ -228,7 +386,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="main-footer bg-gray-dark">
+    <footer class="main-footer bg-gray-dark" style="border-top: 1px solid var(--border); background: rgba(12, 18, 30, 0.85) !important;">
         <div class="float-right d-none d-sm-inline">
             <strong>Versão</strong> 1.0.0
         </div>
@@ -242,6 +400,40 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<script>
+    (function () {
+        const loader = document.getElementById('ux-loader');
+        const interactiveElements = document.querySelectorAll('a[href], form');
+
+        interactiveElements.forEach((el) => {
+            const eventName = el.tagName.toLowerCase() === 'form' ? 'submit' : 'click';
+            el.addEventListener(eventName, function () {
+                if (loader) {
+                    loader.style.width = '55%';
+                    setTimeout(() => { loader.style.width = '85%'; }, 160);
+                }
+            });
+        });
+
+        window.addEventListener('load', () => {
+            if (loader) {
+                loader.style.width = '100%';
+                setTimeout(() => { loader.style.width = '0'; }, 260);
+            }
+        });
+
+        const toasts = document.querySelectorAll('[data-toast]');
+        toasts.forEach((toast, index) => {
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-8px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4200 + (index * 350));
+        });
+    })();
+</script>
 
 {% block extra_js %}{% endblock %}
 </body>

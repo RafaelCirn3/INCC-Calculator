@@ -11,18 +11,25 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
+<div class="row fade-in-up">
     <div class="col-lg-12">
         <div class="card bg-gray-dark">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-file-invoice-dollar mr-2"></i>Parcelas Calculadas</h3>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0"><i class="fas fa-file-invoice-dollar mr-2"></i>Parcelas Calculadas</h3>
                 <div class="card-tools">
-                    <a href="{% url 'calcular_parcela' %}" class="btn btn-success btn-sm">
+                    <a href="{% url 'calcular_parcela' %}" class="btn btn-success btn-sm px-3">
                         <i class="fas fa-plus-circle mr-1"></i> Nova Parcela
                     </a>
                 </div>
             </div>
             <div class="card-body">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" style="gap: 10px;">
+                    <span class="badge" style="background: rgba(29,164,163,0.2); color: #8ce0d4; border: 1px solid rgba(45,195,162,0.35); padding: 8px 12px; font-size: 0.9rem;">
+                        Total de parcelas: {{ parcelas|length }}
+                    </span>
+                    <small style="color: #b7c2d9;">Use a seleção em lote para exclusões rápidas.</small>
+                </div>
 
                 {% if not incc_indices %}
                 <div class="alert alert-danger">
@@ -34,7 +41,7 @@
                 <form method="post" action="{% url 'parcelas_excluir_multiplas' %}" onsubmit="return confirm('Deseja excluir as parcelas selecionadas?')">
                     {% csrf_token %}
                     <div class="table-responsive">
-                        <table class="table table-hover table-dark table-bordered">
+                        <table class="table table-hover table-dark table-bordered" id="parcelas-table">
                             <thead>
                                 <tr>
                                     <th style="width: 40px;"><input type="checkbox" id="check-all"></th>
@@ -50,11 +57,15 @@
                                 {% for parcela in parcelas %}
                                     <tr>
                                         <td><input type="checkbox" name="parcelas_selecionadas" value="{{ parcela.id }}"></td>
-                                        <td>{{ parcela.nome }}</td>
+                                        <td>{{ parcela.nome|default:'-' }}</td>
                                         <td>R$ {{ parcela.valor_original }}</td>
                                         <td>{{ parcela.data_vencimento }}</td>
                                         <td>{{ parcela.data_pagamento }}</td>
-                                        <td>R$ {{ parcela.valor_total }}</td>
+                                        <td>
+                                            <span class="badge" style="background: rgba(45,195,162,0.16); color: #8ce0d4; border: 1px solid rgba(45,195,162,0.35); font-size: 0.9rem;">
+                                                R$ {{ parcela.valor_total }}
+                                            </span>
+                                        </td>
                                         <td>
                                             <a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-eye"></i>
@@ -75,13 +86,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <button type="submit" class="btn btn-danger mt-2">
+                    <button type="submit" class="btn btn-danger mt-2 px-3" id="btn-excluir-multiplas">
                         <i class="fas fa-trash"></i> Excluir selecionadas
                     </button>
                 </form>
 
                 <form method="get" action="{% url 'gerar_excel' %}" class="mt-3">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary px-3">
                         <i class="fas fa-file-excel"></i> Gerar Excel
                     </button>
                 </form>
@@ -100,9 +111,26 @@
     document.addEventListener("DOMContentLoaded", function () {
         const checkAll = document.getElementById('check-all');
         const checkboxes = document.querySelectorAll('input[name="parcelas_selecionadas"]');
+        const deleteButton = document.getElementById('btn-excluir-multiplas');
+
+        function atualizarEstadoBotao() {
+            const marcados = document.querySelectorAll('input[name="parcelas_selecionadas"]:checked').length;
+            if (deleteButton) {
+                deleteButton.disabled = marcados === 0;
+                deleteButton.style.opacity = marcados === 0 ? '0.65' : '1';
+            }
+        }
+
         checkAll.addEventListener('change', function () {
             checkboxes.forEach(cb => cb.checked = this.checked);
+            atualizarEstadoBotao();
         });
+
+        checkboxes.forEach((cb) => {
+            cb.addEventListener('change', atualizarEstadoBotao);
+        });
+
+        atualizarEstadoBotao();
     });
 </script>
 {% endblock %}

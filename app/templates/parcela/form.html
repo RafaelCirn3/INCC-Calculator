@@ -3,35 +3,39 @@
 {% block title %}Nova Parcela{% endblock %}
 
 {% block content %}
-<section class="content mt-4">
+<section class="content mt-4 fade-in-up">
     <div class="container">
         <!-- Botão de Ver Parcelas -->
         <div class="d-flex justify-content-end mb-3">
-            <a href="{% url 'parcela_list' %}" class="btn btn-outline-primary">
+            <a href="{% url 'parcela_list' %}" class="btn btn-outline-primary px-4">
                 <i class="fas fa-list"></i> Ver Parcelas
             </a>
         </div>
 
         <!-- Formulário -->
-        <div class="card bg-dark text-white shadow rounded-3">
-            <div class="card-header bg-secondary">
-                <h3 class="card-title">Calcular Nova Parcela</h3>
+        <div class="card text-white shadow rounded-3 overflow-hidden">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Calcular Nova Parcela</h3>
+                <span class="badge" style="background: rgba(242,184,75,0.2); color: #f8cd78; border: 1px solid rgba(242,184,75,0.4);">Simulação</span>
             </div>
             <div class="card-body">
+                <p class="text-muted mb-4" style="color: #b7c2d9 !important;">
+                    Preencha os dados da parcela e escolha quais encargos deseja aplicar no cálculo final.
+                </p>
                 <form method="post" novalidate>
                     {% csrf_token %}
                     <div class="row g-3">
                         {% for field in form.visible_fields %}
-                            <div class="{% if field.field.widget.input_type == 'checkbox' %}col-12{% else %}col-md-4{% endif %}">
+                            <div class="{% if field.field.widget.input_type == 'checkbox' %}col-12{% else %}col-lg-4 col-md-6{% endif %} mb-3">
                                 {% if field.field.widget.input_type == 'checkbox' %}
-                                    <div class="form-check mt-2">
+                                    <div class="form-check mt-2 p-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(183,194,217,0.15); border-radius: 10px;">
                                         {{ field }}
-                                        <label class="form-check-label text-white" for="{{ field.id_for_label }}">
+                                        <label class="form-check-label text-white ml-2" for="{{ field.id_for_label }}">
                                             {{ field.label }}
                                         </label>
                                     </div>
                                 {% else %}
-                                    <label for="{{ field.id_for_label }}" class="form-label text-white">{{ field.label }}</label>
+                                    <label for="{{ field.id_for_label }}" class="form-label text-white font-weight-bold">{{ field.label }}</label>
                                     {{ field }}
                                 {% endif %}
                                 
@@ -45,8 +49,8 @@
                             </div>
                         {% endfor %}
                     </div>
-                    <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-success">
+                    <div class="d-flex justify-content-end align-items-center mt-4">
+                        <button type="submit" class="btn btn-success px-4 py-2" id="submit-calculo">
                             <i class="fas fa-calculator me-2"></i> Calcular
                         </button>
                     </div>
@@ -55,4 +59,20 @@
         </div>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form[method="post"]');
+        const submitButton = document.getElementById('submit-calculo');
+
+        if (!form || !submitButton) {
+            return;
+        }
+
+        form.addEventListener('submit', function () {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Calculando...';
+        });
+    });
+</script>
 {% endblock %}

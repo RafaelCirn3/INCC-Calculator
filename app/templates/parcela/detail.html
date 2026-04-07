@@ -3,10 +3,10 @@
 {% block title %}Detalhes da Parcela{% endblock %}
 
 {% block content %}
-<section class="content mt-4">
+<section class="content mt-4 fade-in-up">
     <div class="container">
-        <div class="card bg-dark text-white shadow rounded-3">
-            <div class="card-header bg-secondary d-flex justify-content-between align-items-center">
+        <div class="card text-white shadow rounded-3 overflow-hidden">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="mb-0">Detalhes da Parcela</h3>
                 <div>
                     <a href="{% url 'parcela_list' %}" class="btn btn-outline-light btn-sm me-2">
@@ -18,6 +18,11 @@
                 </div>
             </div>
             <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge" style="background: rgba(45,195,162,0.16); color: #8ce0d4; border: 1px solid rgba(45,195,162,0.35); font-size: 0.9rem;">
+                        Resumo da simulação
+                    </span>
+                </div>
                 <table class="table table-hover table-dark table-bordered mb-0">
                     <tbody>
                         <tr>
@@ -52,7 +57,7 @@
                             <th>Taxa de Boleto</th>
                             <td>R$ {{ parcela.taxa_boleto }}</td>
                         </tr>
-                        <tr class="bg-success text-white fw-bold">
+                        <tr style="background: linear-gradient(90deg, rgba(31,143,114,0.5), rgba(46,189,149,0.45));" class="text-white fw-bold">
                             <th>Total a Receber</th>
                             <td>R$ {{ parcela.valor_total }}</td>
                         </tr>
