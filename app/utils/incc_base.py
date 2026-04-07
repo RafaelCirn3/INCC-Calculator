@@ -20,7 +20,19 @@ dados_incc = [
     {"mes_ano": "2025-02-01", "percentual": 0.51},
     {"mes_ano": "2025-03-01", "percentual": 0.38},
     {"mes_ano": "2025-04-01", "percentual": 0.44},
+    {"mes_ano": "2025-05-01", "percentual": 0.26},
+    {"mes_ano": "2025-06-01", "percentual": 0.96},
+    {"mes_ano": "2025-07-01", "percentual": 0.91},
+    {"mes_ano": "2025-08-01", "percentual": 0.70},
+    {"mes_ano": "2025-09-01", "percentual": 0.21},
+    {"mes_ano": "2025-10-01", "percentual": 0.21},
+    {"mes_ano": "2025-11-01", "percentual": 0.28},
+    {"mes_ano": "2025-12-01", "percentual": 0.21},
+    {"mes_ano": "2026-01-01", "percentual": 0.63},
+    {"mes_ano": "2026-02-01", "percentual": 0.34},
+    {"mes_ano": "2026-03-01", "percentual": 0.36},
 ]
+
 
 def carregar_incc_no_banco():
     objetos_incc = []
