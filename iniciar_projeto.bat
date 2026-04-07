@@ -2,81 +2,23 @@
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
-title INCC Launcher
+title INCC Calculator - Autostart
 color 0A
 
+REM Resolução silenciosa de Python e validação
 call :resolver_python || goto :fatal
 call :resolver_venv
 call :validar_arquivos || goto :fatal
 
-:menu
-cls
-call :cabecalho
-echo [1] Preparar ambiente (venv + dependencias)
-echo [2] Banco de dados (makemigrations + migrate)
-echo [3] Verificar projeto (manage.py check)
-echo [4] Popular INCC (load_incc)
-echo [5] Iniciar servidor
-echo [6] Executar fluxo completo
-echo [0] Sair
-echo.
-choice /c 1234560 /n /m "Escolha uma opcao: "
+REM Fluxo automático único
+call :diagnostico
+call :preparar_ambiente || goto :fatal
+call :executar_migracoes || goto :fatal
+call :executar_check || goto :fatal
+call :popular_incc_se_necessario
+call :iniciar_servidor || goto :fatal
 
-if errorlevel 7 goto :fim
-if errorlevel 6 goto :acao_fluxo_completo
-if errorlevel 5 goto :acao_iniciar_servidor
-if errorlevel 4 goto :acao_popular_incc
-if errorlevel 3 goto :acao_check
-if errorlevel 2 goto :acao_migrate
-if errorlevel 1 goto :acao_preparar
-goto :menu
-
-:acao_preparar
-call :preparar_ambiente
-call :retorno_menu
-goto :menu
-
-:acao_migrate
-call :executar_migracoes
-call :retorno_menu
-goto :menu
-
-:acao_check
-call :executar_check
-call :retorno_menu
-goto :menu
-
-:acao_popular_incc
-call :popular_incc
-call :retorno_menu
-goto :menu
-
-:acao_iniciar_servidor
-call :iniciar_servidor
-call :retorno_menu
-goto :menu
-
-:acao_fluxo_completo
-call :preparar_ambiente || goto :fluxo_erro
-call :executar_migracoes || goto :fluxo_erro
-call :executar_check || goto :fluxo_erro
-echo.
-choice /c SN /n /m "Deseja popular os indices INCC agora? [S/N]: "
-if errorlevel 2 goto :iniciar_apos_fluxo
-call :popular_incc || goto :fluxo_erro
-
-:iniciar_apos_fluxo
-call :iniciar_servidor || goto :fluxo_erro
-echo.
-echo Fluxo completo executado com sucesso.
-call :retorno_menu
-goto :menu
-
-:fluxo_erro
-echo.
-echo [ERRO] Fluxo completo interrompido.
-call :retorno_menu
-goto :menu
+goto :fim
 
 :resolver_python
 set "PY_CMD="
@@ -115,22 +57,29 @@ if not exist "requirements.txt" (
 )
 exit /b 0
 
-:cabecalho
-echo ==============================================================
-echo                 INCC CALCULATOR - LAUNCHER
-echo ==============================================================
-echo Diretorio: %CD%
-echo Python: %PY_VER%
-echo Ambiente virtual: %VENV_DIR%
-echo ==============================================================
+:diagnostico
+echo.
+echo ========== DIAGNOSTICO DO PROJETO ==========
+if exist "%VENV_PY%" (
+    echo [OK] Ambiente virtual encontrado em "%VENV_DIR%"
+) else (
+    echo [SETUP] Ambiente virtual nao existe, sera criado.
+)
+
+if exist "db.sqlite3" (
+    echo [OK] Banco de dados existe
+) else (
+    echo [SETUP] Banco de dados sera criado na migracao.
+)
+
+echo ============================================
 echo.
 exit /b 0
 
 :preparar_ambiente
-echo.
-echo [1/4] Preparando ambiente...
+echo [1/5] Preparando ambiente...
 if not exist "%VENV_PY%" (
-    echo Criando ambiente virtual em "%VENV_DIR%"...
+    echo.Criando ambiente virtual em "%VENV_DIR%"...
     call %PY_CMD% -m venv "%VENV_DIR%"
     if errorlevel 1 (
         echo [ERRO] Falha ao criar ambiente virtual.
@@ -138,89 +87,93 @@ if not exist "%VENV_PY%" (
     )
 )
 
-echo Atualizando pip/setuptools/wheel...
-"%VENV_PY%" -m pip install --upgrade pip setuptools wheel
+echo.Atualizando pip/setuptools/wheel...
+"%VENV_PY%" -m pip install --upgrade pip setuptools wheel >nul 2>&1
 if errorlevel 1 (
     echo [ERRO] Falha ao atualizar ferramentas do pip.
     exit /b 1
 )
 
-echo Instalando dependencias do projeto...
-"%VENV_PY%" -m pip install -r requirements.txt
+echo.Instalando dependencias do projeto...
+"%VENV_PY%" -m pip install -r requirements.txt >nul 2>&1
 if errorlevel 1 (
     echo [ERRO] Falha ao instalar dependencias.
     exit /b 1
 )
 
-echo Ambiente pronto.
+echo [OK] Ambiente pronto.
 exit /b 0
 
 :executar_migracoes
-echo.
-echo [2/4] Aplicando migracoes...
-"%VENV_PY%" manage.py makemigrations
+echo [2/5] Aplicando migracoes...
+"%VENV_PY%" manage.py makemigrations >nul 2>&1
 if errorlevel 1 (
     echo [ERRO] Falha no makemigrations.
     exit /b 1
 )
 
-"%VENV_PY%" manage.py migrate
+"%VENV_PY%" manage.py migrate >nul 2>&1
 if errorlevel 1 (
     echo [ERRO] Falha no migrate.
     exit /b 1
 )
 
-echo Migracoes aplicadas com sucesso.
+echo [OK] Migracoes aplicadas com sucesso.
 exit /b 0
 
 :executar_check
-echo.
-echo [3/4] Validando projeto...
-"%VENV_PY%" manage.py check
+echo [3/5] Validando projeto...
+"%VENV_PY%" manage.py check >nul 2>&1
 if errorlevel 1 (
     echo [ERRO] O comando manage.py check retornou falha.
     exit /b 1
 )
 
-echo Validacao concluida sem erros.
+echo [OK] Validacao concluida sem erros.
 exit /b 0
 
-:popular_incc
-echo.
-echo [4/4] Populando dados INCC...
-"%VENV_PY%" manage.py load_incc
-if errorlevel 1 (
-    echo [ERRO] Falha ao executar load_incc.
-    exit /b 1
-)
+:popular_incc_se_necessario
+echo [4/5] Verificando dados INCC...
+"%VENV_PY%" manage.py shell -c "from app.models import INCCIndex; exit(0 if INCCIndex.objects.exists() else 1)" >nul 2>&1
 
-echo Base INCC atualizada.
+if errorlevel 1 (
+    echo.Populando base de dados INCC pela primeira vez...
+    "%VENV_PY%" manage.py load_incc >nul 2>&1
+    if errorlevel 1 (
+        echo [AVISO] Falha ao popular INCC, pode ser feito manualmente depois.
+    ) else (
+        echo [OK] Base INCC carregada com sucesso.
+    )
+) else (
+    echo [OK] Base INCC ja populada. Pulando...
+)
 exit /b 0
 
 :iniciar_servidor
+echo [5/5] Iniciando servidor...
 echo.
-echo Iniciando servidor Django em nova janela...
+echo ===== SERVIDOR PRONTO =====
+echo Acesse em: http://127.0.0.1:8000
+echo ============================
+echo.
 start "INCC - Django Server" cmd /k "cd /d \"%CD%\" && \"%VENV_PY%\" manage.py runserver"
 if errorlevel 1 (
     echo [ERRO] Nao foi possivel iniciar a janela do servidor.
     exit /b 1
 )
-
-echo Servidor iniciado em http://127.0.0.1:8000
-exit /b 0
-
-:retorno_menu
-echo.
-pause
+timeout /t 2 >nul
 exit /b 0
 
 :fatal
 echo.
-echo Falha critica. Encerrando launcher.
+echo [ERRO CRITICO] Falha na inicializacao.
+echo Verifique os requisitos:
+echo - Python 3.x instalado
+echo - manage.py e requirements.txt presentes
+echo.
 pause
 exit /b 1
 
 :fim
-echo.
-echo Encerrando launcher.
+echo Projeto pronto! Use Ctrl+C para parar o servidor.
 exit /b 0
