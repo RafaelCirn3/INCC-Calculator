@@ -156,7 +156,7 @@ echo ===== SERVIDOR PRONTO =====
 echo Acesse em: http://127.0.0.1:8000
 echo ============================
 echo.
-start "INCC - Django Server" cmd /k "cd /d \"%CD%\" && \"%VENV_PY%\" manage.py runserver"
+start "INCC - Django Server" /D "%CD%" "%VENV_PY%" manage.py runserver
 if errorlevel 1 (
     echo [ERRO] Nao foi possivel iniciar a janela do servidor.
     exit /b 1
