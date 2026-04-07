@@ -50,6 +50,28 @@ class RegrasCalculoTests(TestCase):
 		self.assertEqual(parcela.taxa_boleto, Decimal('10.00'))
 		self.assertEqual(parcela.valor_total, Decimal('117.00'))
 
+	def test_calcular_parcela_com_configuracao_padrao_nao_quebra_decimal(self):
+		INCCIndex.objects.create(mes_ano=date(2026, 1, 1), percentual=Decimal('0.10'))
+
+		response = self.client.post(
+			reverse('calcular_parcela'),
+			{
+				'nome': 'Sem Float Error',
+				'valor_original': '100.00',
+				'data_vencimento': '2026-01-01',
+				'data_pagamento': '2026-01-15',
+				'aplicar_incc': '',
+				'aplicar_juros': 'on',
+				'aplicar_multa': 'on',
+			},
+		)
+
+		self.assertEqual(response.status_code, 302)
+		parcela = Parcela.objects.get(nome='Sem Float Error')
+		self.assertIsInstance(parcela.multa, Decimal)
+		self.assertIsInstance(parcela.juros_mora, Decimal)
+		self.assertIsInstance(parcela.taxa_boleto, Decimal)
+
 
 class ViewsFluxoTests(TestCase):
 	def test_alimentar_incc_bloqueia_get(self):

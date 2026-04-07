@@ -126,6 +126,10 @@ def calcular_parcela(request):
 
             if pagto:
                 configuracao = ConfiguracaoCalculo.obter_configuracao()
+                multa_percentual = Decimal(str(configuracao.multa_percentual))
+                juros_percentual_mensal = Decimal(str(configuracao.juros_percentual_mensal))
+                taxa_boleto_configurada = Decimal(str(configuracao.taxa_boleto))
+
                 # Tenta buscar o INCC do mês de pagamento. Se não existir, tenta o do mês anterior.
                 mes_ref = pagto.replace(day=1)
                 if not INCCIndex.objects.filter(mes_ano=mes_ref).exists():
@@ -140,10 +144,10 @@ def calcular_parcela(request):
                 multa = Decimal('0.00')  # Valor padrão
                 if parcela.aplicar_multa:
                     if dias_atraso > 0:
-                        multa = parcela.valor_original * configuracao.multa_percentual
+                        multa = parcela.valor_original * multa_percentual
                 # Juros proporcionais (1% ao mês = 0.03333% ao dia, aproximado por 1/30)
                 if parcela.aplicar_juros:
-                    juros = parcela.valor_original * configuracao.juros_percentual_mensal * Decimal(dias_atraso) / Decimal('30')
+                    juros = parcela.valor_original * juros_percentual_mensal * Decimal(dias_atraso) / Decimal('30')
                 else:
                     juros = Decimal('0.00')
                 # Correção opcional pelo INCC
@@ -153,8 +157,8 @@ def calcular_parcela(request):
                 else:
                     correcao_incc = Decimal('0.00')
 
-                # Taxa de boleto fixa
-                taxa_boleto = configuracao.taxa_boleto
+                # Taxa de boleto configurada
+                taxa_boleto = taxa_boleto_configurada
 
                 # Valor total
                 total = parcela.valor_original + multa + juros + correcao_incc + taxa_boleto

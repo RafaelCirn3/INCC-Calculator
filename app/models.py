@@ -1,4 +1,5 @@
 from django.db import models
+from decimal import Decimal
 
 class INCCIndex(models.Model):
     mes_ano = models.DateField()
@@ -43,9 +44,9 @@ class Parcela(models.Model):
 
 
 class ConfiguracaoCalculo(models.Model):
-    multa_percentual = models.DecimalField(max_digits=5, decimal_places=4, default=0.0200)
-    juros_percentual_mensal = models.DecimalField(max_digits=5, decimal_places=4, default=0.0100)
-    taxa_boleto = models.DecimalField(max_digits=10, decimal_places=2, default=3.00)
+    multa_percentual = models.DecimalField(max_digits=5, decimal_places=4, default=Decimal('0.0200'))
+    juros_percentual_mensal = models.DecimalField(max_digits=5, decimal_places=4, default=Decimal('0.0100'))
+    taxa_boleto = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('3.00'))
     atualizado_em = models.DateTimeField(auto_now=True)
 
     @classmethod
@@ -53,9 +54,9 @@ class ConfiguracaoCalculo(models.Model):
         configuracao, _ = cls.objects.get_or_create(
             id=1,
             defaults={
-                'multa_percentual': 0.0200,
-                'juros_percentual_mensal': 0.0100,
-                'taxa_boleto': 3.00,
+                'multa_percentual': Decimal('0.0200'),
+                'juros_percentual_mensal': Decimal('0.0100'),
+                'taxa_boleto': Decimal('3.00'),
             },
         )
         return configuracao
