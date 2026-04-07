@@ -40,3 +40,30 @@ class Parcela(models.Model):
 
     def __str__(self):
         return f"Parcela de R$ {self.valor_original} - Venc: {self.data_vencimento}"
+
+
+class ConfiguracaoCalculo(models.Model):
+    multa_percentual = models.DecimalField(max_digits=5, decimal_places=4, default=0.0200)
+    juros_percentual_mensal = models.DecimalField(max_digits=5, decimal_places=4, default=0.0100)
+    taxa_boleto = models.DecimalField(max_digits=10, decimal_places=2, default=3.00)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def obter_configuracao(cls):
+        configuracao, _ = cls.objects.get_or_create(
+            id=1,
+            defaults={
+                'multa_percentual': 0.0200,
+                'juros_percentual_mensal': 0.0100,
+                'taxa_boleto': 3.00,
+            },
+        )
+        return configuracao
+
+    def save(self, *args, **kwargs):
+        # Mantém uma configuração única para simplificar operação no admin.
+        self.id = 1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "Configuração de Cálculo"

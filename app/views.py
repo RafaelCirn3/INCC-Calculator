@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from dateutil.relativedelta import relativedelta
+from django.db.models import Q
 
 from decimal import Decimal
-from .models import Parcela, INCCIndex
+from .models import Parcela, INCCIndex, ConfiguracaoCalculo
 from .forms import ParcelaForm, INCCIndexForm
 import pandas as pd
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
@@ -14,6 +15,62 @@ from .utils.incc_base import carregar_incc_no_banco
 
 def base(request):
     return render(request, 'base.html')
+
+
+def _to_decimal(value):
+    if value is None or value == '':
+        return None
+    try:
+        return Decimal(str(value).replace(',', '.'))
+    except Exception:
+        return None
+
+
+def filtrar_parcelas(queryset, params):
+    nome = (params.get('nome') or '').strip()
+    vencimento_de = (params.get('vencimento_de') or '').strip()
+    vencimento_ate = (params.get('vencimento_ate') or '').strip()
+    pagamento_de = (params.get('pagamento_de') or '').strip()
+    pagamento_ate = (params.get('pagamento_ate') or '').strip()
+    atraso_min = (params.get('atraso_min') or '').strip()
+    atraso_max = (params.get('atraso_max') or '').strip()
+    valor_min = (params.get('valor_min') or '').strip()
+    valor_max = (params.get('valor_max') or '').strip()
+
+    if nome:
+        queryset = queryset.filter(Q(nome__icontains=nome))
+    if vencimento_de:
+        queryset = queryset.filter(data_vencimento__gte=vencimento_de)
+    if vencimento_ate:
+        queryset = queryset.filter(data_vencimento__lte=vencimento_ate)
+    if pagamento_de:
+        queryset = queryset.filter(data_pagamento__gte=pagamento_de)
+    if pagamento_ate:
+        queryset = queryset.filter(data_pagamento__lte=pagamento_ate)
+    if atraso_min.isdigit():
+        queryset = queryset.filter(dias_atraso__gte=int(atraso_min))
+    if atraso_max.isdigit():
+        queryset = queryset.filter(dias_atraso__lte=int(atraso_max))
+
+    valor_min_decimal = _to_decimal(valor_min)
+    valor_max_decimal = _to_decimal(valor_max)
+    if valor_min_decimal is not None:
+        queryset = queryset.filter(valor_total__gte=valor_min_decimal)
+    if valor_max_decimal is not None:
+        queryset = queryset.filter(valor_total__lte=valor_max_decimal)
+
+    filtros = {
+        'nome': nome,
+        'vencimento_de': vencimento_de,
+        'vencimento_ate': vencimento_ate,
+        'pagamento_de': pagamento_de,
+        'pagamento_ate': pagamento_ate,
+        'atraso_min': atraso_min,
+        'atraso_max': atraso_max,
+        'valor_min': valor_min,
+        'valor_max': valor_max,
+    }
+    return queryset, filtros
 
 def incc_index_form(request):
     if request.method == 'POST':
@@ -68,6 +125,7 @@ def calcular_parcela(request):
                     return render(request, 'parcela/form.html', {'form': form})
 
             if pagto:
+                configuracao = ConfiguracaoCalculo.obter_configuracao()
                 # Tenta buscar o INCC do mês de pagamento. Se não existir, tenta o do mês anterior.
                 mes_ref = pagto.replace(day=1)
                 if not INCCIndex.objects.filter(mes_ano=mes_ref).exists():
@@ -82,10 +140,10 @@ def calcular_parcela(request):
                 multa = Decimal('0.00')  # Valor padrão
                 if parcela.aplicar_multa:
                     if dias_atraso > 0:
-                        multa = parcela.valor_original * Decimal('0.02')
+                        multa = parcela.valor_original * configuracao.multa_percentual
                 # Juros proporcionais (1% ao mês = 0.03333% ao dia, aproximado por 1/30)
                 if parcela.aplicar_juros:
-                    juros = parcela.valor_original * Decimal('0.01') * Decimal(dias_atraso) / Decimal('30')
+                    juros = parcela.valor_original * configuracao.juros_percentual_mensal * Decimal(dias_atraso) / Decimal('30')
                 else:
                     juros = Decimal('0.00')
                 # Correção opcional pelo INCC
@@ -96,7 +154,7 @@ def calcular_parcela(request):
                     correcao_incc = Decimal('0.00')
 
                 # Taxa de boleto fixa
-                taxa_boleto = Decimal('3.00')
+                taxa_boleto = configuracao.taxa_boleto
 
                 # Valor total
                 total = parcela.valor_original + multa + juros + correcao_incc + taxa_boleto
@@ -121,13 +179,15 @@ def parcela_detalhe(request, parcela_id):
     return render(request, 'parcela/detail.html', {'parcela': parcela})
 
 def parcela_list(request):
-    parcelas = Parcela.objects.all()
+    parcelas = Parcela.objects.all().order_by('-data_vencimento', '-id')
+    parcelas, filtros = filtrar_parcelas(parcelas, request.GET)
     incc_indices = INCCIndex.objects.all().order_by('-mes_ano')
     form = INCCIndexForm()
     return render(request, 'parcela/list.html', {
         'parcelas': parcelas,
         'incc_indices': incc_indices,
         'incc_form': form,
+        'filtros': filtros,
     })
 
 def parcela_delete(request, parcela_id):
@@ -148,7 +208,7 @@ def excluir_varias_parcelas(request):
     return redirect('parcela_list')
 def gerar_excel(request):
     # Buscar dados das parcelas
-    parcelas = Parcela.objects.all()
+    parcelas, _ = filtrar_parcelas(Parcela.objects.all(), request.GET)
 
     # Criar DataFrame com os dados
     data = []
