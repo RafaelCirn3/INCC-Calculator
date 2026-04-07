@@ -7,10 +7,9 @@ from decimal import Decimal
 from .models import Parcela, INCCIndex
 from .forms import ParcelaForm, INCCIndexForm
 import pandas as pd
-import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from .utils.incc_base import carregar_incc_no_banco
 
 def base(request):
@@ -22,7 +21,8 @@ def incc_index_form(request):
         if form.is_valid():
             try:
                 form.save()
-                return redirect('incc_create')
+                messages.success(request, 'Índice INCC salvo com sucesso.')
+                return redirect('incc_index')
             except ValueError as e:
                 messages.error(request, str(e))
     else:
@@ -34,14 +34,15 @@ def incc_index_form(request):
 
 # Função para calcular o percentual acumulado do INCC entre duas datas
 def calcular_incc_acumulado(data_inicio, data_fim):
-    """ Retorna o percentual acumulado do INCC entre dois meses """
+    """Retorna o percentual acumulado do INCC do mês inicial até o mês anterior ao pagamento."""
     if data_fim < data_inicio:
         return Decimal('0')
 
     acumulado = Decimal('0.00')
     atual = data_inicio.replace(day=1)
+    limite = data_fim.replace(day=1) - relativedelta(months=1)
 
-    while atual <= data_fim:
+    while atual <= limite:
         try:
             indice = INCCIndex.objects.get(mes_ano=atual)
             acumulado += indice.percentual
@@ -69,13 +70,9 @@ def calcular_parcela(request):
             if pagto:
                 # Tenta buscar o INCC do mês de pagamento. Se não existir, tenta o do mês anterior.
                 mes_ref = pagto.replace(day=1)
-                try:
-                    incc = INCCIndex.objects.get(mes_ano=mes_ref)
-                except INCCIndex.DoesNotExist:
+                if not INCCIndex.objects.filter(mes_ano=mes_ref).exists():
                     mes_ref = mes_ref - relativedelta(months=1)
-                    try:
-                        incc = INCCIndex.objects.get(mes_ano=mes_ref)
-                    except INCCIndex.DoesNotExist:
+                    if not INCCIndex.objects.filter(mes_ano=mes_ref).exists():
                         form.add_error('data_pagamento', 'Não existe índice de INCC para o mês de pagamento ou mês anterior.')
                         return render(request, 'parcela/form.html', {'form': form})
 
@@ -163,15 +160,18 @@ def gerar_excel(request):
             'Valor Total': float(p.valor_total),
         })
 
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(data, columns=['Data Vencimento', 'Data Pagamento', 'Valor Original', 'Valor Total'])
 
-    # Cálculo dos totais
-    total_original = df['Valor Original'].sum()
-    total_total = df['Valor Total'].sum()
+    if df.empty:
+        df.loc[len(df.index)] = ['Sem parcelas cadastradas', '-', 0.0, 0.0]
+    else:
+        # Cálculo dos totais
+        total_original = df['Valor Original'].sum()
+        total_total = df['Valor Total'].sum()
 
-    # Adicionar linhas de totais
-    df.loc[len(df.index)] = ['', '', 'Valor Original:', total_original]
-    df.loc[len(df.index)] = ['', '', 'Valor Atualizado:', total_total]
+        # Adicionar linhas de totais
+        df.loc[len(df.index)] = ['', '', 'Valor Original:', total_original]
+        df.loc[len(df.index)] = ['', '', 'Valor Atualizado:', total_total]
 
     # Criar um arquivo Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -182,7 +182,6 @@ def gerar_excel(request):
         df.to_excel(writer, sheet_name='Parcelas', index=False)
 
         # Estilização com openpyxl
-        wb = writer.book
         ws = writer.sheets['Parcelas']
 
         # Estilo para cabeçalhos
@@ -221,14 +220,13 @@ def gerar_excel(request):
 
     return response
 
-@csrf_exempt  # Ação que pode ser acessada sem CSRF para facilitar no exemplo
+@require_POST
 def alimentar_incc(request):
-    if request.method == 'POST':
-        # Carregar os dados do INCC no banco de dados
-        try:
-            carregar_incc_no_banco()  # Chama o código para carregar os dados
-            messages.success(request, "Dados do INCC alimentados com sucesso!")
-        except Exception as e:
-            return HttpResponse(f"Erro ao alimentar os dados INCC: {str(e)}")
+    # Carregar os dados do INCC no banco de dados
+    try:
+        carregar_incc_no_banco()  # Chama o código para carregar os dados
+        messages.success(request, "Dados do INCC alimentados com sucesso!")
+    except Exception as e:
+        return HttpResponse(f"Erro ao alimentar os dados INCC: {str(e)}")
 
     return redirect('incc_index')  # Redireciona de volta para a lista de INCC
