@@ -1,0 +1,14 @@
+services:
+  web:
+    build:
+      context: .
+    container_name: incc-calculator
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python manage.py migrate --noinput
+      && python manage.py shell -c \"from app.models import INCCIndex; import sys; sys.exit(0 if INCCIndex.objects.exists() else 1)\" || python manage.py load_incc
+      && python manage.py runserver 0.0.0.0:8000"

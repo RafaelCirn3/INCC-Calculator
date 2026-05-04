@@ -45,15 +45,18 @@ python manage.py runserver
 Acesse a aplicação em `http://127.0.0.1:8000`
 
 
-# Caso utilizer o Dockerfile: 
-###  Executando o Docker
+# Executando com Docker Desktop
+
+No Windows, basta dar duplo clique em [iniciar_projeto.bat](iniciar_projeto.bat). O script verifica o Docker Desktop, executa o `docker compose` e abre a aplicação em `http://localhost:8000`.
+
+Se preferir executar manualmente, use:
 
 ```bash
-docker build -t incc-calculator . 
+docker compose up --build -d
 ```
 
 ```bash
-docker run -p 8000:8000 incc-calculator 
+docker compose down
 ```
 
 ---
