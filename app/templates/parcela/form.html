@@ -2,63 +2,99 @@
 
 {% block title %}Nova Parcela{% endblock %}
 
+{% block page_title %}Nova Parcela{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+<li class="breadcrumb-item"><a href="{% url 'parcela_list' %}">Parcelas</a></li>
+<li class="breadcrumb-item active">Nova Parcela</li>
+{% endblock %}
+
 {% block content %}
-<section class="content mt-4 fade-in-up">
-    <div class="container">
-        <!-- Botão de Ver Parcelas -->
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{% url 'parcela_list' %}" class="btn btn-outline-primary px-4">
-                <i class="fas fa-list"></i> Ver Parcelas
-            </a>
+<div class="page-hero fade-in-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center" style="gap: 1rem;">
+        <div>
+            <div class="section-label mb-1">Simulação financeira</div>
+            <h1 class="mb-2">Calcular nova parcela</h1>
+            <p class="lead">Preencha os dados e escolha os encargos para gerar um valor atualizado com mais clareza.</p>
         </div>
-
-        <!-- Formulário -->
-        <div class="card text-white shadow rounded-3 overflow-hidden">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">Calcular Nova Parcela</h3>
-                <span class="badge" style="background: rgba(242,184,75,0.2); color: #f8cd78; border: 1px solid rgba(242,184,75,0.4);">Simulação</span>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-4" style="color: #b7c2d9 !important;">
-                    Preencha os dados da parcela e escolha quais encargos deseja aplicar no cálculo final.
-                </p>
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        {% for field in form.visible_fields %}
-                            <div class="{% if field.field.widget.input_type == 'checkbox' %}col-12{% else %}col-lg-4 col-md-6{% endif %} mb-3">
-                                {% if field.field.widget.input_type == 'checkbox' %}
-                                    <div class="form-check mt-2 p-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(183,194,217,0.15); border-radius: 10px;">
-                                        {{ field }}
-                                        <label class="form-check-label text-white ml-2" for="{{ field.id_for_label }}">
-                                            {{ field.label }}
-                                        </label>
-                                    </div>
-                                {% else %}
-                                    <label for="{{ field.id_for_label }}" class="form-label text-white font-weight-bold">{{ field.label }}</label>
-                                    {{ field }}
-                                {% endif %}
-                                
-                                {% if field.help_text %}
-                                    <div class="form-text text-light small">{{ field.help_text }}</div>
-                                {% endif %}
-
-                                {% for error in field.errors %}
-                                    <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="d-flex justify-content-end align-items-center mt-4">
-                        <button type="submit" class="btn btn-success px-4 py-2" id="submit-calculo">
-                            <i class="fas fa-calculator me-2"></i> Calcular
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div class="action-bar">
+            <a href="{% url 'parcela_list' %}" class="btn btn-outline-light px-4">
+                <i class="fas fa-list mr-2"></i>Ver Parcelas
+            </a>
+            <span class="pill" style="background: rgba(242,184,75,0.12); color: #ffd98b; border: 1px solid rgba(242,184,75,0.24);">Simulação guiada</span>
         </div>
     </div>
-</section>
+</div>
+
+<div class="row fade-in-up">
+    <div class="col-lg-4 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Objetivo</div>
+            <div class="metric-value" style="font-size: 1.35rem;">Cálculo claro</div>
+            <div class="metric-subtitle">Visual mais limpo para preenchimento rápido.</div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Encargos</div>
+            <div class="metric-value" style="font-size: 1.35rem;">INCC + juros</div>
+            <div class="metric-subtitle">Escolha apenas o que deve compor o valor final.</div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Fluxo</div>
+            <div class="metric-value" style="font-size: 1.35rem;">Sem ruído</div>
+            <div class="metric-subtitle">Menos distração e mais foco na simulação.</div>
+        </div>
+    </div>
+</div>
+
+<div class="card text-white fade-in-up">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.75rem;">
+        <h3 class="card-title mb-0">Dados da parcela</h3>
+        <span class="pill" style="background: rgba(22,184,176,0.14); color: #98f0e9; border: 1px solid rgba(22,184,176,0.24);">Preencha os campos abaixo</span>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                {% for field in form.visible_fields %}
+                    <div class="{% if field.field.widget.input_type == 'checkbox' %}col-12{% else %}col-lg-4 col-md-6{% endif %} mb-3">
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            <div class="soft-surface p-3 h-100">
+                                <div class="custom-control custom-checkbox">
+                                    {{ field }}
+                                    <label class="custom-control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                </div>
+                                {% if field.help_text %}
+                                    <div class="form-text small mt-2">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text small mt-2">{{ field.help_text }}</div>
+                            {% endif %}
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <div class="text-danger small mt-2">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex flex-wrap justify-content-end align-items-center mt-4" style="gap: 0.75rem;">
+                <a href="{% url 'parcela_list' %}" class="btn btn-outline-light px-4">Cancelar</a>
+                <button type="submit" class="btn btn-success px-4 py-2" id="submit-calculo">
+                    <i class="fas fa-calculator mr-2"></i>Calcular
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -71,7 +107,7 @@
 
         form.addEventListener('submit', function () {
             submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Calculando...';
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Calculando...';
         });
     });
 </script>

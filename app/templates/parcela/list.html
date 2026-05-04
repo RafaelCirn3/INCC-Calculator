@@ -11,160 +11,190 @@
 {% endblock %}
 
 {% block content %}
-<div class="row fade-in-up">
-    <div class="col-lg-12">
-        <div class="card bg-gray-dark">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0"><i class="fas fa-file-invoice-dollar mr-2"></i>Parcelas Calculadas</h3>
-                <div class="card-tools">
-                    <a href="{% url 'calcular_parcela' %}" class="btn btn-success btn-sm px-3">
-                        <i class="fas fa-plus-circle mr-1"></i> Nova Parcela
-                    </a>
-                </div>
-            </div>
-            <div class="card-body">
-
-                <form method="get" class="mb-4 p-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(183,194,217,0.18); border-radius: 12px;">
-                    <div class="row">
-                        <div class="col-lg-3 col-md-6 mb-2">
-                            <label class="small">Nome</label>
-                            <input type="text" name="nome" class="form-control" value="{{ filtros.nome }}" placeholder="Cliente">
-                        </div>
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Vencimento de</label>
-                            <input type="date" name="vencimento_de" class="form-control" value="{{ filtros.vencimento_de }}">
-                        </div>
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Vencimento até</label>
-                            <input type="date" name="vencimento_ate" class="form-control" value="{{ filtros.vencimento_ate }}">
-                        </div>
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Pagamento de</label>
-                            <input type="date" name="pagamento_de" class="form-control" value="{{ filtros.pagamento_de }}">
-                        </div>
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Pagamento até</label>
-                            <input type="date" name="pagamento_ate" class="form-control" value="{{ filtros.pagamento_ate }}">
-                        </div>
-                        <div class="col-lg-1 col-md-6 mb-2 d-flex align-items-end">
-                            <button class="btn btn-primary btn-block" type="submit">
-                                <i class="fas fa-filter"></i>
-                            </button>
-                        </div>
-
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Atraso mín. (dias)</label>
-                            <input type="number" name="atraso_min" class="form-control" value="{{ filtros.atraso_min }}" min="0">
-                        </div>
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Atraso máx. (dias)</label>
-                            <input type="number" name="atraso_max" class="form-control" value="{{ filtros.atraso_max }}" min="0">
-                        </div>
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Valor mín. (R$)</label>
-                            <input type="text" name="valor_min" class="form-control" value="{{ filtros.valor_min }}" placeholder="0,00">
-                        </div>
-                        <div class="col-lg-2 col-md-6 mb-2">
-                            <label class="small">Valor máx. (R$)</label>
-                            <input type="text" name="valor_max" class="form-control" value="{{ filtros.valor_max }}" placeholder="0,00">
-                        </div>
-                        <div class="col-lg-4 col-md-12 mb-2 d-flex align-items-end">
-                            <a href="{% url 'parcela_list' %}" class="btn btn-outline-light mr-2">Limpar filtros</a>
-                            <button class="btn btn-success" type="submit">Aplicar filtros</button>
-                        </div>
-                    </div>
-                </form>
-
-                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" style="gap: 10px;">
-                    <span class="badge" style="background: rgba(29,164,163,0.2); color: #8ce0d4; border: 1px solid rgba(45,195,162,0.35); padding: 8px 12px; font-size: 0.9rem;">
-                        Total de parcelas: {{ parcelas|length }}
-                    </span>
-                    <small style="color: #b7c2d9;">Use a seleção em lote para exclusões rápidas.</small>
-                </div>
-
-                {% if not incc_indices %}
-                <div class="alert alert-danger">
-                    Nenhum índice INCC cadastrado. O sistema depende desses valores para os cálculos.
-                    <a href="{% url 'incc_index' %}" class="btn btn-sm btn-dark ml-2">Cadastrar agora</a>
-                </div>
-                {% endif %}
-
-                <form method="post" action="{% url 'parcelas_excluir_multiplas' %}" onsubmit="return confirm('Deseja excluir as parcelas selecionadas?')">
-                    {% csrf_token %}
-                    <div class="table-responsive">
-                        <table class="table table-hover table-dark table-bordered" id="parcelas-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px;"><input type="checkbox" id="check-all"></th>
-                                    <th>Nome</th>
-                                    <th>Valor Original</th>
-                                    <th>Vencimento</th>
-                                    <th>Pagamento</th>
-                                    <th>Total Atualizado</th>
-                                    <th style="width: 160px;">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for parcela in parcelas %}
-                                    <tr>
-                                        <td><input type="checkbox" name="parcelas_selecionadas" value="{{ parcela.id }}"></td>
-                                        <td>{{ parcela.nome|default:'-' }}</td>
-                                        <td>R$ {{ parcela.valor_original }}</td>
-                                        <td>{{ parcela.data_vencimento }}</td>
-                                        <td>{{ parcela.data_pagamento }}</td>
-                                        <td>
-                                            <span class="badge" style="background: rgba(45,195,162,0.16); color: #8ce0d4; border: 1px solid rgba(45,195,162,0.35); font-size: 0.9rem;">
-                                                R$ {{ parcela.valor_total }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <form action="{% url 'parcela_delete' parcela.id %}" method="post" class="d-inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Deseja excluir esta parcela?')">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="7" class="text-center">Nenhuma parcela encontrada.</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <button type="submit" class="btn btn-danger mt-2 px-3" id="btn-excluir-multiplas">
-                        <i class="fas fa-trash"></i> Excluir selecionadas
-                    </button>
-                </form>
-
-                <form method="get" action="{% url 'gerar_excel' %}" class="mt-3">
-                    <input type="hidden" name="nome" value="{{ filtros.nome }}">
-                    <input type="hidden" name="vencimento_de" value="{{ filtros.vencimento_de }}">
-                    <input type="hidden" name="vencimento_ate" value="{{ filtros.vencimento_ate }}">
-                    <input type="hidden" name="pagamento_de" value="{{ filtros.pagamento_de }}">
-                    <input type="hidden" name="pagamento_ate" value="{{ filtros.pagamento_ate }}">
-                    <input type="hidden" name="atraso_min" value="{{ filtros.atraso_min }}">
-                    <input type="hidden" name="atraso_max" value="{{ filtros.atraso_max }}">
-                    <input type="hidden" name="valor_min" value="{{ filtros.valor_min }}">
-                    <input type="hidden" name="valor_max" value="{{ filtros.valor_max }}">
-                    <button type="submit" class="btn btn-primary px-3">
-                        <i class="fas fa-file-excel"></i> Gerar Excel
-                    </button>
-                </form>
-
-            </div>
+<div class="page-hero fade-in-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center" style="gap: 1rem;">
+        <div>
+            <div class="section-label mb-1">Gestão financeira</div>
+            <h1 class="mb-2">Parcelas calculadas</h1>
+            <p class="lead">Acompanhe vencimentos, veja totais atualizados e aplique filtros antes de exportar.</p>
+        </div>
+        <div class="action-bar">
+            <a href="{% url 'calcular_parcela' %}" class="btn btn-success px-4">
+                <i class="fas fa-plus-circle mr-2"></i>Nova Parcela
+            </a>
+            <a href="{% url 'gerar_excel' %}?nome={{ filtros.nome|urlencode }}&vencimento_de={{ filtros.vencimento_de|urlencode }}&vencimento_ate={{ filtros.vencimento_ate|urlencode }}&pagamento_de={{ filtros.pagamento_de|urlencode }}&pagamento_ate={{ filtros.pagamento_ate|urlencode }}&atraso_min={{ filtros.atraso_min|urlencode }}&atraso_max={{ filtros.atraso_max|urlencode }}&valor_min={{ filtros.valor_min|urlencode }}&valor_max={{ filtros.valor_max|urlencode }}" class="btn btn-primary px-4">
+                <i class="fas fa-file-excel mr-2"></i>Exportar Excel
+            </a>
         </div>
     </div>
 </div>
 
-<!-- Botão flutuante -->
-<a href="{% url 'calcular_parcela' %}" class="btn btn-success position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">
-    <i class="fas fa-plus"></i> Nova Parcela
+<div class="row fade-in-up">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Total de parcelas</div>
+            <div class="metric-value">{{ parcelas|length }}</div>
+            <div class="metric-subtitle">Registros disponíveis para consulta</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Filtros ativos</div>
+            <div class="metric-value">{{ filtros|length }}</div>
+            <div class="metric-subtitle">Campos preenchidos na busca</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Base INCC</div>
+            <div class="metric-value">{% if incc_indices %}OK{% else %}Atenção{% endif %}</div>
+            <div class="metric-subtitle">Índices necessários para o cálculo</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Ação rápida</div>
+            <div class="metric-value">Novo</div>
+            <div class="metric-subtitle">Criar simulação em poucos cliques</div>
+        </div>
+    </div>
+</div>
+
+<div class="card fade-in-up mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.75rem;">
+        <h3 class="card-title mb-0"><i class="fas fa-filter mr-2"></i>Filtros avançados</h3>
+        <span class="pill" style="background: rgba(22,184,176,0.14); color: #98f0e9; border: 1px solid rgba(22,184,176,0.24);">Refine a lista antes da exportação</span>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <label>Nome</label>
+                    <input type="text" name="nome" class="form-control" value="{{ filtros.nome }}" placeholder="Cliente">
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Vencimento de</label>
+                    <input type="date" name="vencimento_de" class="form-control" value="{{ filtros.vencimento_de }}">
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Vencimento até</label>
+                    <input type="date" name="vencimento_ate" class="form-control" value="{{ filtros.vencimento_ate }}">
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Pagamento de</label>
+                    <input type="date" name="pagamento_de" class="form-control" value="{{ filtros.pagamento_de }}">
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Pagamento até</label>
+                    <input type="date" name="pagamento_ate" class="form-control" value="{{ filtros.pagamento_ate }}">
+                </div>
+                <div class="col-lg-1 col-md-6 mb-3 d-flex align-items-end">
+                    <button class="btn btn-primary btn-block" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Atraso mín. (dias)</label>
+                    <input type="number" name="atraso_min" class="form-control" value="{{ filtros.atraso_min }}" min="0">
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Atraso máx. (dias)</label>
+                    <input type="number" name="atraso_max" class="form-control" value="{{ filtros.atraso_max }}" min="0">
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Valor mín. (R$)</label>
+                    <input type="text" name="valor_min" class="form-control" value="{{ filtros.valor_min }}" placeholder="0,00">
+                </div>
+                <div class="col-lg-2 col-md-6 mb-3">
+                    <label>Valor máx. (R$)</label>
+                    <input type="text" name="valor_max" class="form-control" value="{{ filtros.valor_max }}" placeholder="0,00">
+                </div>
+                <div class="col-lg-4 col-md-12 mb-3 d-flex align-items-end" style="gap: 0.75rem;">
+                    <a href="{% url 'parcela_list' %}" class="btn btn-outline-light px-4 flex-grow-1">Limpar filtros</a>
+                    <button class="btn btn-success px-4 flex-grow-1" type="submit">Aplicar filtros</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if not incc_indices %}
+<div class="alert alert-warning fade-in-up">
+    <strong>Base INCC ausente.</strong> Os cálculos precisam desses índices para ficarem corretos.
+    <a href="{% url 'incc_index' %}" class="btn btn-sm btn-warning ml-2 mt-2 mt-md-0">Cadastrar agora</a>
+</div>
+{% endif %}
+
+<div class="card fade-in-up">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.75rem;">
+        <h3 class="card-title mb-0"><i class="fas fa-file-invoice-dollar mr-2"></i>Parcelas cadastradas</h3>
+        <span class="pill" style="background: rgba(242,184,75,0.12); color: #ffd98b; border: 1px solid rgba(242,184,75,0.24);">Seleção em lote disponível</span>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'parcelas_excluir_multiplas' %}" onsubmit="return confirm('Deseja excluir as parcelas selecionadas?')">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="parcelas-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="check-all"></th>
+                            <th>Nome</th>
+                            <th>Valor Original</th>
+                            <th>Vencimento</th>
+                            <th>Pagamento</th>
+                            <th>Total Atualizado</th>
+                            <th style="width: 180px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for parcela in parcelas %}
+                            <tr>
+                                <td><input type="checkbox" name="parcelas_selecionadas" value="{{ parcela.id }}"></td>
+                                <td>
+                                    <strong>{{ parcela.nome|default:'-' }}</strong>
+                                </td>
+                                <td>R$ {{ parcela.valor_original }}</td>
+                                <td>{{ parcela.data_vencimento }}</td>
+                                <td>{{ parcela.data_pagamento }}</td>
+                                <td>
+                                    <span class="badge" style="background: rgba(22,184,176,0.14); color: #93ece3; border: 1px solid rgba(22,184,176,0.24); font-size: 0.9rem; padding: 0.55rem 0.75rem;">
+                                        R$ {{ parcela.valor_total }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap" style="gap: 0.4rem;">
+                                        <a href="{% url 'parcela_detalhe' parcela.id %}" class="btn btn-info btn-sm" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="submit" class="btn btn-danger btn-sm" formaction="{% url 'parcela_delete' parcela.id %}" title="Excluir parcela" onclick="return confirm('Deseja excluir esta parcela?')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="section-label mb-2">Nenhum resultado</div>
+                                    Nenhuma parcela encontrada com os filtros atuais.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mt-3" style="gap: 0.75rem;">
+                <button type="submit" class="btn btn-danger px-4" id="btn-excluir-multiplas">
+                    <i class="fas fa-trash mr-2"></i>Excluir selecionadas
+                </button>
+                <small class="text-muted">Marque uma ou mais linhas para remover em lote.</small>
+            </div>
+        </form>
+    </div>
+</div>
+
+        <a href="{% url 'calcular_parcela' %}" class="btn btn-success position-fixed d-flex align-items-center justify-content-center" style="bottom: 20px; right: 20px; z-index: 1000; box-shadow: 0 16px 34px rgba(22,184,176,0.28); max-width: 220px;">
+    <i class="fas fa-plus mr-1"></i> Nova Parcela
 </a>
 
 <script>

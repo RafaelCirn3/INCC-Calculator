@@ -3,73 +3,125 @@
 
 {% block title %}Gerenciar INCC{% endblock %}
 
-{% block content %}
-<div class="container mt-4 fade-in-up">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4" style="gap: 10px;">
-        <h2 class="text-white mb-0">Gerenciar Índices INCC</h2>
-        <span class="badge" style="background: rgba(242,184,75,0.2); color: #f8cd78; border: 1px solid rgba(242,184,75,0.4);">Base atualizável</span>
-    </div>
-    <div class="d-flex justify-content-end mb-3">
-        <form method="post" action="{% url 'alimentar_incc' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary px-4" id="btn-alimentar-incc">
-                <i class="fas fa-sync-alt"></i> Alimentar INCC
-            </button>
-        </form>
-    </div>
-    {% if messages %}
-        <div class="alert alert-info">
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        </div>
-    {% endif %}
+{% block page_title %}Gerenciar INCC{% endblock %}
 
-    <!-- Formulário de Cadastro -->
-    <div class="card mb-4 overflow-hidden">
-        <div class="card-header text-white">
-            Cadastrar Novo Índice
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+<li class="breadcrumb-item active">INCC</li>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero fade-in-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center" style="gap: 1rem;">
+        <div>
+            <div class="section-label mb-1">Atualização da base</div>
+            <h1 class="mb-2">Gerenciar índices INCC</h1>
+            <p class="lead">Cadastre os índices mensais e mantenha as simulações consistentes e confiáveis.</p>
         </div>
-        <div class="card-body">
-            <p style="color: #b7c2d9;">Cadastre índices mensais para manter os cálculos sempre consistentes.</p>
-            <form method="post">
+        <div class="action-bar">
+            <form method="post" action="{% url 'alimentar_incc' %}" class="mb-0">
                 {% csrf_token %}
-                <div class="form-row">
-                    <div class="form-group col-md-4">
-                        <label for="id_mes_ano" class="font-weight-bold">Mês/Ano</label>
-                        {{ form.mes_ano|add_class:"form-control" }}
-                    </div>
-                    <div class="form-group col-md-4">
-                        <label for="id_percentual" class="font-weight-bold">Percentual do Mês</label>
-                        {{ form.percentual|add_class:"form-control" }}
-                    </div>
-                    <div class="form-group col-md-4">
-                        <label for="id_percentual_acumulado" class="font-weight-bold">Percentual Acumulado</label>
-                        {{ form.percentual_acumulado|add_class:"form-control" }}
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-success px-4">Salvar</button>
-                <a href="{% url 'parcela_list' %}" class="btn btn-secondary ml-2 px-4">Voltar</a>
+                <button type="submit" class="btn btn-primary px-4" id="btn-alimentar-incc">
+                    <i class="fas fa-sync-alt mr-2"></i>Alimentar INCC
+                </button>
             </form>
         </div>
     </div>
+</div>
 
-    <!-- Lista de Índices Cadastrados -->
-    <div class="card overflow-hidden">
-        <div class="card-header text-white d-flex justify-content-between align-items-center">
-            Índices INCC Cadastrados
-            <small class="text-muted">Total: {{ incc_indices|length }}</small>
+<div class="row fade-in-up mb-4">
+    <div class="col-lg-4 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Índices cadastrados</div>
+            <div class="metric-value">{{ incc_indices|length }}</div>
+            <div class="metric-subtitle">Total de meses disponíveis na base</div>
         </div>
-        <ul class="list-group list-group-flush">
-            {% for indice in incc_indices %}
-                <li class="list-group-item d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.02); border-color: rgba(183,194,217,0.15); color: #eaf2ff;">
-                    <span>{{ indice.mes_ano|date:"m/Y" }}</span>
-                    <span>Mensal: {{ indice.percentual }}% | Acumulado: {{ indice.percentual_acumulado }}%</span>
-                </li>
-            {% empty %}
-                <li class="list-group-item">Nenhum índice cadastrado ainda.</li>
-            {% endfor %}
-        </ul>
+    </div>
+    <div class="col-lg-4 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Entrada recomendada</div>
+            <div class="metric-value" style="font-size: 1.35rem;">AAAA-MM-01</div>
+            <div class="metric-subtitle">Formato ideal para o campo de mês/ano</div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-3">
+        <div class="metric-card">
+            <div class="metric-label">Status</div>
+            <div class="metric-value" style="font-size: 1.35rem;">Atualizável</div>
+            <div class="metric-subtitle">Use a importação automática quando necessário</div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    <div class="alert alert-info fade-in-up">
+        {% for message in messages %}
+            <div>{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="card mb-4 fade-in-up">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.75rem;">
+        <h3 class="card-title mb-0"><i class="fas fa-plus-circle mr-2"></i>Cadastrar novo índice</h3>
+        <span class="pill" style="background: rgba(242,184,75,0.12); color: #ffd98b; border: 1px solid rgba(242,184,75,0.24);">Manter cálculo atualizado</span>
+    </div>
+    <div class="card-body">
+        <p class="mb-4" style="color: var(--text-secondary);">Inclua um novo mês e seu percentual para alimentar o cálculo das parcelas com precisão.</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="id_mes_ano">Mês/Ano</label>
+                    {{ form.mes_ano|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_percentual">Percentual do Mês</label>
+                    {{ form.percentual|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_percentual_acumulado">Percentual Acumulado</label>
+                    {{ form.percentual_acumulado|add_class:"form-control" }}
+                </div>
+            </div>
+            <div class="d-flex flex-wrap justify-content-end align-items-center mt-2" style="gap: 0.75rem;">
+                <a href="{% url 'parcela_list' %}" class="btn btn-outline-light px-4">Voltar</a>
+                <button type="submit" class="btn btn-success px-4">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card fade-in-up">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.75rem;">
+        <h3 class="card-title mb-0"><i class="fas fa-percentage mr-2"></i>Índices cadastrados</h3>
+        <span class="pill" style="background: rgba(22,184,176,0.14); color: #98f0e9; border: 1px solid rgba(22,184,176,0.24);">Base atualizável</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Mês/Ano</th>
+                        <th>Mensal</th>
+                        <th>Acumulado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for indice in incc_indices %}
+                        <tr>
+                            <td><strong>{{ indice.mes_ano|date:"m/Y" }}</strong></td>
+                            <td><span class="badge" style="background: rgba(22,184,176,0.14); color: #93ece3; border: 1px solid rgba(22,184,176,0.24);">{{ indice.percentual }}%</span></td>
+                            <td><span class="badge" style="background: rgba(242,184,75,0.14); color: #ffd98b; border: 1px solid rgba(242,184,75,0.22);">{{ indice.percentual_acumulado }}%</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4">Nenhum índice cadastrado ainda.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
